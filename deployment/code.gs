@@ -45,6 +45,9 @@ function doPost(e) {
       result = handleCRUDApp(params);
     } else if (action === 'reorderItems') {
       result = handleReorderItems(params);
+    } else if (action === 'verifyAppPassword') {
+      // Public endpoint to verify app password
+      result = handleVerifyAppPassword(params);
     }
 
     return ContentService.createTextOutput(JSON.stringify(result))
@@ -89,11 +92,22 @@ function getDataFromSheet(sheetName) {
 function getAllData() {
   const configRaw = getDataFromSheet('Config');
   const socials = getDataFromSheet('Socials');
-  const apps = getDataFromSheet('Apps');
+  let apps = getDataFromSheet('Apps');
 
   let config = {};
   configRaw.forEach(item => {
     config[item.Key] = item.Value;
+  });
+
+  // Security: Hide URL if app is password protected
+  apps = apps.map(app => {
+    if (app.Password && app.Password.toString().trim() !== "") {
+      // Return a modified object without the URL and Password
+      const { Url, Password, ...safeApp } = app;
+      safeApp.isLocked = true;
+      return safeApp;
+    }
+    return app;
   });
 
   return {
@@ -185,6 +199,25 @@ function handleCRUDSocial(params) {
 
 function handleCRUDApp(params) {
   return genericCRUD('Apps', params);
+}
+
+function handleVerifyAppPassword(params) {
+  const appId = params.appId;
+  const password = params.password;
+
+  const apps = getDataFromSheet('Apps');
+  const app = apps.find(a => a.ID === appId);
+
+  if (!app) {
+    return { success: false, message: "Aplikasi tidak ditemukan" };
+  }
+
+  // Check password (case-sensitive)
+  if (app.Password && app.Password.toString() === password) {
+    return { success: true, url: app.Url };
+  } else {
+    return { success: false, message: "Password salah" };
+  }
 }
 
 function handleReorderItems(params) {

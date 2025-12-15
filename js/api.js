@@ -95,6 +95,21 @@ export async function reorderItems(type, orderedIds) {
     return sendPostRequest('reorderItems', { type, orderedIds });
 }
 
+export async function verifyAppPassword(appId, password) {
+    if (USE_MOCK) {
+        console.log(`[API] Verify App Password: ${appId}`);
+        await new Promise(r => setTimeout(r, 500));
+        const app = MOCK_DATA.apps.find(a => a.ID === appId);
+
+        if (app && app.Password === password) {
+            return { success: true, url: app.Url };
+        }
+        return { success: false, message: "Password salah (MOCK)" };
+    }
+    // No token needed for verification as it is public interaction
+    return sendPostRequest('verifyAppPassword', { appId, password });
+}
+
 // --- HELPER PRIVATE FUNCTIONS ---
 
 async function sendPostRequest(action, payload) {

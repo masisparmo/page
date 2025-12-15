@@ -1,7 +1,7 @@
 export const MOCK_DATA = {
     config: {
         profile_name: "ISPARMO",
-        profile_title: "Trainer AI & Vibe Coder Untuk Produktifitas & Bisnis",
+        profile_title: "Trainer AI & Vibe Coder Untuk Produktivitas & Bisnis",
         profile_image: "isparmo-foto.png",
         verified_badge: true,
         theme_color: "blue"

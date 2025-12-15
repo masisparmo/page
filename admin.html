@@ -414,6 +414,7 @@
                 html += createInput('URL', 'url', 'text');
                 html += createIconPicker('FontAwesome Class', 'iconclass');
                 html += createInput('Warna Tema', 'colortheme', 'text', 'blue, purple, pink');
+                html += createInput('Password (Opsional)', 'password', 'text', 'Kosongkan jika tidak dikunci');
             }
 
             // Visible Checkbox
@@ -444,6 +445,7 @@
                         form.elements['url'].value = item.Url;
                         form.elements['iconclass'].value = item.IconClass;
                         form.elements['colortheme'].value = item.ColorTheme;
+                        form.elements['password'].value = item.Password || '';
                     }
                     // Update visual state of picker
                     updateIconPickerVisual(item.IconClass);
