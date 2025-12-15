@@ -79,6 +79,20 @@ function getSheet(name) {
   return ss.getSheetByName(name);
 }
 
+function logToSheet(message, data) {
+  try {
+    const ss = SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName("DebugLog");
+    if (!sheet) {
+      sheet = ss.insertSheet("DebugLog");
+      sheet.appendRow(["Timestamp", "Message", "Data"]);
+    }
+    sheet.appendRow([new Date(), message, JSON.stringify(data)]);
+  } catch (e) {
+    // Fail silently if logging fails
+  }
+}
+
 function getDataFromSheet(sheetName) {
   const sheet = getSheet(sheetName);
   if (!sheet) return [];
@@ -275,11 +289,14 @@ function genericCRUD(sheetName, params) {
   const operation = params.operation;
   const item = params.item;
 
+  logToSheet(`CRUD Request: ${sheetName} - ${operation}`, item);
+
   // Ambil headers untuk mapping yang benar
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
 
   // Normalize headers (trim whitespace) for safer matching
   const cleanHeaders = headers.map(h => h.toString().trim());
+  logToSheet("Detected Headers", cleanHeaders);
 
   // Function to find value in item ignoring case/whitespace of key
   const getValue = (headerName) => {
@@ -305,6 +322,7 @@ function genericCRUD(sheetName, params) {
 
     // Map item values ke urutan header
     const rowValues = cleanHeaders.map(header => getValue(header));
+    logToSheet("Writing Row (Create)", rowValues);
 
     sheet.appendRow(rowValues);
     return { success: true, id: newId };
@@ -316,7 +334,10 @@ function genericCRUD(sheetName, params) {
     // Find ID column index robustly
     const idIndex = cleanHeaders.findIndex(h => h.toLowerCase() === 'id');
 
-    if (idIndex === -1) return { success: false, message: "Column ID not found in sheet" };
+    if (idIndex === -1) {
+        logToSheet("Error", "Column ID not found");
+        return { success: false, message: "Column ID not found in sheet" };
+    }
 
     let rowIndex = -1;
     // Cari baris berdasarkan ID
@@ -327,13 +348,17 @@ function genericCRUD(sheetName, params) {
       }
     }
 
-    if (rowIndex === -1) return { success: false, message: "ID not found" };
+    if (rowIndex === -1) {
+         logToSheet("Error", `ID not found: ${item.ID}`);
+         return { success: false, message: "ID not found" };
+    }
 
     if (operation === 'delete') {
       sheet.deleteRow(rowIndex);
     } else {
       // Update: Map values to columns
       const newRowValues = cleanHeaders.map(header => getValue(header));
+      logToSheet("Writing Row (Update)", newRowValues);
 
       sheet.getRange(rowIndex, 1, 1, newRowValues.length).setValues([newRowValues]);
     }
