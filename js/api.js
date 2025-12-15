@@ -2,7 +2,7 @@ import { MOCK_DATA } from './mock-data.js';
 
 // --- CONFIGURATION ---
 const USE_MOCK = true; // Set FALSE jika sudah deploy GAS
-const GAS_URL = "https://script.google.com/macros/s/AKfycbx_PLACEHOLDER_URL/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwIF2gQTpto24rc8qrK9tBSTGK5WpSS0tlicB34rFl3gQW4jq0DVlip1_7vMMa0-UPhGg/exec";
 
 // --- STATE MANAGEMENT ---
 let localData = null; // Menyimpan data yang di-fetch agar tidak request berulang kali jika tidak perlu
