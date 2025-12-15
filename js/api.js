@@ -1,4 +1,4 @@
-import { MOCK_DATA } from './mock-data.js';
+https://script.google.com/macros/s/AKfycbzEOoRCtcGsxaUpmU-vK4Obj-v1Qt_8TV-M9gD9ELg6wqkb__T_YuTfQgnPgtG05ac9/execmport { MOCK_DATA } from './mock-data.js';
 
 // --- CONFIGURATION ---
 const USE_MOCK = false; // Set FALSE jika sudah deploy GAS
