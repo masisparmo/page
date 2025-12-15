@@ -25,7 +25,7 @@
     <!-- Custom Config -->
     <script>
         tailwind.config = {
-            darkMode: 'class', // Enable manual dark mode toggle
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -33,9 +33,9 @@
                     },
                     colors: {
                         brand: {
-                            dark: '#0f172a', // Slate 900
-                            darker: '#020617', // Slate 950
-                            cardDark: '#1e293b', // Slate 800
+                            dark: '#0f172a',
+                            darker: '#020617',
+                            cardDark: '#1e293b',
                         }
                     },
                     animation: {
@@ -54,32 +54,14 @@
     </script>
 
     <style>
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.5); 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(100, 116, 139, 0.8); 
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.8); }
 
-        .link-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(8px); /* Glassmorphism effect */
-        }
-        
-        .link-card:hover {
-            transform: translateY(-3px) scale(1.01);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-        }
+        .link-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(8px); }
+        .link-card:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
 
-        /* --- MODERN ANIMATED BACKGROUND --- */
         .modern-bg {
             background: linear-gradient(-45deg, #e0f2fe, #f1f5f9, #eff6ff, #eef2ff);
             background-size: 400% 400%;
@@ -96,21 +78,8 @@
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-
-        /* Glassmorphism for Container in Dark Mode */
-        .glass-container {
-            background: rgba(255, 255, 255, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(10px);
-        }
-        
-        .dark .glass-container {
-            background: rgba(30, 41, 59, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
     </style>
 
-    <!-- Script to handle theme before body loads to prevent flash -->
     <script>
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark')
@@ -121,76 +90,48 @@
 </head>
 <body class="modern-bg text-slate-800 dark:text-slate-100 min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-500">
 
-    <!-- Theme Toggle Button (Top Right) -->
+    <!-- Theme Toggle -->
     <div class="absolute top-4 right-4 z-50">
-        <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-md border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-yellow-400 hover:scale-110 transition-transform duration-300 focus:outline-none" aria-label="Toggle Dark Mode">
-            <i class="fas fa-sun hidden dark:block text-lg"></i> <!-- Sun icon for dark mode -->
-            <i class="fas fa-moon block dark:hidden text-lg text-slate-600"></i> <!-- Moon icon for light mode -->
+        <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-md border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-yellow-400 hover:scale-110 transition-transform duration-300 focus:outline-none">
+            <i class="fas fa-sun hidden dark:block text-lg"></i>
+            <i class="fas fa-moon block dark:hidden text-lg text-slate-600"></i>
         </button>
     </div>
 
-    <!-- Main Container with Glass Effect -->
-    <main class="w-full max-w-md mx-auto animate-fade-in-up relative z-10">
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="fixed inset-0 flex items-center justify-center z-50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+
+    <!-- Main Content (Hidden Initially) -->
+    <main id="main-content" class="w-full max-w-md mx-auto animate-fade-in-up relative z-10 hidden">
         
         <!-- Profile Section -->
         <div class="flex flex-col items-center mb-8 text-center">
             <div class="relative group">
                 <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full opacity-75 group-hover:opacity-100 transition duration-300 blur"></div>
                 <!-- Profile Image -->
-                <!-- UPDATED: Filename URL encoded for better compatibility -->
-                <img src="isparmo-foto.png"
-                     alt="Isparmo Profile" 
+                <img id="profile-image" src="" alt="Profile"
                      class="relative w-32 h-32 rounded-full object-cover object-top border-4 border-white dark:border-slate-800 shadow-xl"
-                     onerror="this.src='https://ui-avatars.com/api/?name=Isparmo&background=0D8ABC&color=fff&size=128'">
+                     onerror="this.src='https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff&size=128'">
                 
                 <!-- Verification Badge -->
-                <div class="absolute bottom-1 right-1 bg-blue-500 text-white p-1.5 rounded-full border-2 border-white dark:border-slate-800 shadow-sm flex items-center justify-center w-8 h-8" title="Verified Trainer">
+                <div id="verified-badge" class="absolute bottom-1 right-1 bg-blue-500 text-white p-1.5 rounded-full border-2 border-white dark:border-slate-800 shadow-sm flex items-center justify-center w-8 h-8 hidden" title="Verified">
                     <i class="fas fa-check text-xs"></i>
                 </div>
             </div>
 
-            <h1 class="mt-4 text-2xl font-bold text-slate-900 dark:text-white tracking-tight drop-shadow-sm">ISPARMO</h1>
-            <p class="text-slate-600 dark:text-slate-300 font-medium text-sm mt-1 mb-4">
-                Trainer AI & Vibe Coder Untuk Produktifitas & Bisnis
-            </p>
+            <h1 id="profile-name" class="mt-4 text-2xl font-bold text-slate-900 dark:text-white tracking-tight drop-shadow-sm">...</h1>
+            <p id="profile-title" class="text-slate-600 dark:text-slate-300 font-medium text-sm mt-1 mb-4">...</p>
 
             <!-- Social Icons Row -->
-            <div class="flex gap-4 mt-2">
-                <!-- Website -->
-                <a href="https://www.isparmo.com" target="_blank" class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all duration-300 group relative">
-                    <i class="fas fa-globe"></i>
-                    <span class="absolute -bottom-8 bg-slate-800 dark:bg-slate-700 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">Website</span>
-                </a>
-                
-                <!-- Email -->
-                <a href="mailto:mail@isparmo.com" class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:border-red-400 dark:hover:border-red-500 hover:shadow-md transition-all duration-300 group relative">
-                    <i class="fas fa-envelope"></i>
-                    <span class="absolute -bottom-8 bg-slate-800 dark:bg-slate-700 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">Email</span>
-                </a>
-
-                <!-- Facebook -->
-                <a href="https://www.facebook.com/isparmo.ir/" target="_blank" class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all duration-300 group relative">
-                    <i class="fab fa-facebook text-lg"></i>
-                    <span class="absolute -bottom-8 bg-slate-800 dark:bg-slate-700 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">Facebook</span>
-                </a>
-
-                <!-- LinkedIn -->
-                <a href="https://id.linkedin.com/in/ir-isparmo-ipm-489833177" target="_blank" class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-500 hover:border-blue-500 dark:hover:border-blue-600 hover:shadow-md transition-all duration-300 group relative">
-                    <i class="fab fa-linkedin text-lg"></i>
-                    <span class="absolute -bottom-8 bg-slate-800 dark:bg-slate-700 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">LinkedIn</span>
-                </a>
-
-                <!-- WhatsApp (Highlight) -->
-                <a href="https://wa.me/628121083060?text=Assalamu'alaikum%20Pak%20Isparmo,%20saya%20mau%20tanya..." target="_blank" class="w-10 h-10 rounded-full bg-green-50 dark:bg-green-900/20 shadow-sm border border-green-200 dark:border-green-800 flex items-center justify-center text-green-600 dark:text-green-400 hover:bg-green-500 hover:text-white dark:hover:bg-green-600 hover:border-green-500 hover:shadow-md transition-all duration-300 group relative">
-                    <i class="fab fa-whatsapp text-lg"></i>
-                    <span class="absolute -bottom-8 bg-slate-800 dark:bg-slate-700 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">WhatsApp</span>
-                </a>
+            <div id="socials-container" class="flex flex-wrap justify-center gap-4 mt-2">
+                <!-- Social links injected here -->
             </div>
         </div>
 
         <!-- Links Container -->
         <div class="space-y-4 px-2">
-
             <!-- Section Title -->
             <div class="flex items-center gap-3 mb-2 px-1">
                 <div class="h-px bg-slate-400/30 dark:bg-slate-500/30 flex-1 transition-colors"></div>
@@ -198,63 +139,9 @@
                 <div class="h-px bg-slate-400/30 dark:bg-slate-500/30 flex-1 transition-colors"></div>
             </div>
 
-            <!-- Link 1: Pintar BMC -->
-            <a href="https://bmcpintar.isparmo.com" target="_blank" class="link-card block bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-white/50 dark:border-slate-700 shadow-lg dark:shadow-none hover:border-blue-500 dark:hover:border-blue-500 relative overflow-hidden group">
-                <div class="absolute top-0 left-0 w-1 h-full bg-blue-500 group-hover:w-2 transition-all"></div>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 transition-colors">
-                            <i class="fas fa-chart-pie text-lg"></i>
-                        </div>
-                        <div class="text-left">
-                            <h3 class="font-bold text-slate-800 dark:text-slate-100">Pintar BMC</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">Buat Business Model Canvas Instan</p>
-                        </div>
-                    </div>
-                    <div class="text-slate-300 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
-                </div>
-            </a>
-
-            <!-- Link 2: Pintar Promosi -->
-            <a href="https://pintarpromosi.isparmo.com" target="_blank" class="link-card block bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-white/50 dark:border-slate-700 shadow-lg dark:shadow-none hover:border-purple-500 dark:hover:border-purple-500 relative overflow-hidden group">
-                <div class="absolute top-0 left-0 w-1 h-full bg-purple-500 group-hover:w-2 transition-all"></div>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-lg bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 transition-colors">
-                            <i class="fas fa-bullhorn text-lg"></i>
-                        </div>
-                        <div class="text-left">
-                            <h3 class="font-bold text-slate-800 dark:text-slate-100">Pintar Promosi</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">Generator Copywriting Otomatis</p>
-                        </div>
-                    </div>
-                    <div class="text-slate-300 dark:text-slate-600 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
-                </div>
-            </a>
-
-            <!-- Link 3: Pro Studio Foto -->
-            <a href="https://gemini.google.com/share/b4ed682a130a" target="_blank" class="link-card block bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-white/50 dark:border-slate-700 shadow-lg dark:shadow-none hover:border-pink-500 dark:hover:border-pink-500 relative overflow-hidden group">
-                <div class="absolute top-0 left-0 w-1 h-full bg-pink-500 group-hover:w-2 transition-all"></div>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-lg bg-pink-50 dark:bg-pink-900/30 flex items-center justify-center text-pink-600 dark:text-pink-400 transition-colors">
-                            <i class="fas fa-camera-retro text-lg"></i>
-                        </div>
-                        <div class="text-left">
-                            <h3 class="font-bold text-slate-800 dark:text-slate-100">Pro Studio Foto</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">Ubah Foto Produk Jadi Luar Biasa</p>
-                        </div>
-                    </div>
-                    <div class="text-slate-300 dark:text-slate-600 group-hover:text-pink-500 dark:group-hover:text-pink-400 transition-colors">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
-                </div>
-            </a>
-            
+            <div id="apps-container">
+                <!-- App links injected here -->
+            </div>
         </div>
 
         <!-- Share Button -->
@@ -266,20 +153,109 @@
 
         <!-- Footer -->
         <footer class="text-center mt-6 pb-6">
-            <p class="text-xs text-slate-500 dark:text-slate-400">© 2025 Isparmo. All Rights Reserved.</p>
-            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Empowering UMKM with AI</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">© <span id="year"></span> <span id="footer-name"></span>. All Rights Reserved.</p>
         </footer>
 
     </main>
 
-    <!-- Copy to Clipboard Toast -->
+    <!-- Toast -->
     <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-slate-800 dark:bg-slate-700 text-white px-6 py-3 rounded-full shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none z-50 flex items-center gap-2">
         <i class="fas fa-check-circle text-green-400"></i>
         <span class="text-sm font-medium">Link profil berhasil disalin!</span>
     </div>
 
+    <!-- Main Logic -->
+    <script type="module">
+        import { fetchData } from './js/api.js';
+
+        async function init() {
+            const data = await fetchData();
+            if (!data) {
+                alert("Gagal memuat data. Coba refresh halaman.");
+                return;
+            }
+
+            renderProfile(data.config);
+            renderSocials(data.socials);
+            renderApps(data.apps);
+
+            document.getElementById('loading-spinner').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('year').innerText = new Date().getFullYear();
+            document.getElementById('footer-name').innerText = data.config.profile_name || 'Isparmo';
+        }
+
+        function renderProfile(config) {
+            document.getElementById('profile-name').innerText = config.profile_name;
+            document.getElementById('profile-title').innerText = config.profile_title;
+            document.getElementById('profile-image').src = config.profile_image;
+
+            if (String(config.verified_badge).toLowerCase() === 'true') {
+                document.getElementById('verified-badge').classList.remove('hidden');
+            }
+        }
+
+        function renderSocials(socials) {
+            const container = document.getElementById('socials-container');
+            container.innerHTML = '';
+
+            socials.filter(s => String(s.Visible).toLowerCase() === 'true').forEach(s => {
+                const a = document.createElement('a');
+                a.href = s.Url;
+                a.target = "_blank";
+                // Default styling based on original code, can be enhanced dynamically if color is provided
+                let colorClass = "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400";
+                if(s.Platform.toLowerCase() === 'whatsapp') colorClass = "text-green-600 dark:text-green-400 hover:bg-green-500 hover:text-white";
+                if(s.Platform.toLowerCase() === 'email') colorClass = "text-slate-600 dark:text-slate-400 hover:text-red-500";
+
+                a.className = `w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center transition-all duration-300 group relative ${colorClass}`;
+
+                a.innerHTML = `
+                    <i class="${s.IconClass} text-lg"></i>
+                    <span class="absolute -bottom-8 bg-slate-800 dark:bg-slate-700 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">${s.Platform}</span>
+                `;
+                container.appendChild(a);
+            });
+        }
+
+        function renderApps(apps) {
+            const container = document.getElementById('apps-container');
+            container.innerHTML = '';
+
+            apps.filter(app => String(app.Visible).toLowerCase() === 'true').forEach(app => {
+                const link = document.createElement('a');
+                link.href = app.Url;
+                link.target = "_blank";
+
+                const theme = app.ColorTheme || 'blue';
+
+                link.className = `link-card block bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-white/50 dark:border-slate-700 shadow-lg dark:shadow-none hover:border-${theme}-500 dark:hover:border-${theme}-500 relative overflow-hidden group mb-4`;
+
+                link.innerHTML = `
+                    <div class="absolute top-0 left-0 w-1 h-full bg-${theme}-500 group-hover:w-2 transition-all"></div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-${theme}-50 dark:bg-${theme}-900/30 flex items-center justify-center text-${theme}-600 dark:text-${theme}-400 transition-colors">
+                                <i class="${app.IconClass} text-lg"></i>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="font-bold text-slate-800 dark:text-slate-100">${app.Name}</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">${app.Description || ''}</p>
+                            </div>
+                        </div>
+                        <div class="text-slate-300 dark:text-slate-600 group-hover:text-${theme}-500 dark:group-hover:text-${theme}-400 transition-colors">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(link);
+            });
+        }
+
+        init();
+    </script>
+
     <script>
-        // Toggle Theme Function
         function toggleTheme() {
             if (document.documentElement.classList.contains('dark')) {
                 document.documentElement.classList.remove('dark');
@@ -289,33 +265,23 @@
                 localStorage.theme = 'dark';
             }
         }
-
-        // Share Function
         function shareProfile() {
-            // Check if Web Share API is supported
             if (navigator.share) {
                 navigator.share({
-                    title: 'Isparmo - Trainer AI & Vibe Coder',
-                    text: 'Cek aplikasi AI untuk produktivitas UMKM buatan Pak Isparmo disini:',
+                    title: document.title,
+                    text: 'Cek profil ini:',
                     url: window.location.href
-                })
-                .then(() => console.log('Successful share'))
-                .catch((error) => console.log('Error sharing', error));
+                }).catch(console.error);
             } else {
-                // Fallback: Copy to clipboard
                 const dummy = document.createElement('input');
                 document.body.appendChild(dummy);
                 dummy.value = window.location.href;
                 dummy.select();
                 document.execCommand('copy');
                 document.body.removeChild(dummy);
-                
-                // Show toast
                 const toast = document.getElementById('toast');
                 toast.classList.remove('opacity-0');
-                setTimeout(() => {
-                    toast.classList.add('opacity-0');
-                }, 3000);
+                setTimeout(() => toast.classList.add('opacity-0'), 3000);
             }
         }
     </script>
