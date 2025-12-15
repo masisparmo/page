@@ -173,6 +173,7 @@
 
     <script type="module">
         import { fetchData, login, forgotPassword, updateProfile, crudSocial, crudApp } from './js/api.js';
+        import { ICONS } from './js/icons.js';
 
         // --- GLOBAL STATE ---
         let currentData = null;
@@ -370,12 +371,12 @@
             if (type === 'social') {
                 html += createInput('Platform', 'platform', 'text', 'e.g. Facebook');
                 html += createInput('URL', 'url', 'text', 'https://...');
-                html += createInput('FontAwesome Class', 'iconclass', 'text', 'fab fa-facebook');
+                html += createIconPicker('FontAwesome Class', 'iconclass');
             } else {
                 html += createInput('Nama Aplikasi', 'name', 'text');
                 html += createInput('Deskripsi', 'description', 'text');
                 html += createInput('URL', 'url', 'text');
-                html += createInput('FontAwesome Class', 'iconclass', 'text', 'fas fa-link');
+                html += createIconPicker('FontAwesome Class', 'iconclass');
                 html += createInput('Warna Tema', 'colortheme', 'text', 'blue, purple, pink');
             }
 
@@ -388,6 +389,9 @@
             `;
 
             fields.innerHTML = html;
+
+            // Initialize Custom Icon Logic
+            setupIconPicker();
 
             // Fill values if editing
             if (id && currentData) {
@@ -405,10 +409,15 @@
                         form.elements['iconclass'].value = item.IconClass;
                         form.elements['colortheme'].value = item.ColorTheme;
                     }
+                    // Update visual state of picker
+                    updateIconPickerVisual(item.IconClass);
+
                     if (document.getElementById('visible-check')) {
                         document.getElementById('visible-check').checked = String(item.Visible).toLowerCase() === 'true';
                     }
                 }
+            } else {
+                 updateIconPickerVisual('fas fa-circle'); // Default
             }
 
             modal.classList.remove('hidden');
@@ -417,6 +426,92 @@
         window.closeModal = () => {
             document.getElementById('modal').classList.add('hidden');
         };
+
+        function createIconPicker(label, name) {
+            return `
+                <div class="mt-2 relative">
+                    <label class="block text-sm font-medium mb-1 capitalize">${label}</label>
+                    <div class="relative">
+                        <input type="text" name="${name}" id="icon-input" class="input-field pl-10" placeholder="Pilih atau ketik icon..." autocomplete="off">
+                        <div id="icon-preview" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-lg">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <button type="button" id="icon-dropdown-btn" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <!-- Dropdown Content -->
+                    <div id="icon-dropdown" class="hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                        <div class="grid grid-cols-4 gap-2 p-2" id="icon-grid">
+                            <!-- Icons injected here -->
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function setupIconPicker() {
+            const input = document.getElementById('icon-input');
+            const dropdown = document.getElementById('icon-dropdown');
+            const grid = document.getElementById('icon-grid');
+            const btn = document.getElementById('icon-dropdown-btn');
+
+            // Populate Grid
+            grid.innerHTML = ICONS.map(icon => `
+                <button type="button" class="flex flex-col items-center justify-center p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors gap-1 text-center"
+                    onclick="window.selectIcon('${icon.class}')" title="${icon.label}">
+                    <i class="${icon.class} text-xl text-slate-700 dark:text-slate-200"></i>
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400 truncate w-full">${icon.label}</span>
+                </button>
+            `).join('');
+
+            // Toggle Dropdown
+            const toggle = () => dropdown.classList.toggle('hidden');
+            input.addEventListener('click', toggle);
+            btn.addEventListener('click', toggle);
+
+            // Filter on type
+            input.addEventListener('input', (e) => {
+                const val = e.target.value.toLowerCase();
+                // Update preview live
+                updateIconPickerVisual(e.target.value);
+
+                // Filter Grid
+                const buttons = grid.querySelectorAll('button');
+                let hasMatch = false;
+                buttons.forEach(btn => {
+                    const title = btn.getAttribute('title').toLowerCase();
+                    const cls = btn.getAttribute('onclick').toLowerCase(); // hacky but works
+                    if (title.includes(val) || cls.includes(val)) {
+                        btn.classList.remove('hidden');
+                        hasMatch = true;
+                    } else {
+                        btn.classList.add('hidden');
+                    }
+                });
+                if(val && hasMatch) dropdown.classList.remove('hidden');
+            });
+
+            // Close on click outside
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+        }
+
+        window.selectIcon = (iconClass) => {
+            const input = document.getElementById('icon-input');
+            input.value = iconClass;
+            updateIconPickerVisual(iconClass);
+            document.getElementById('icon-dropdown').classList.add('hidden');
+        };
+
+        function updateIconPickerVisual(iconClass) {
+            const preview = document.getElementById('icon-preview');
+            // Remove 'fa-search' or old icon
+            preview.innerHTML = `<i class="${iconClass}"></i>`;
+        }
 
         window.editItem = (type, id) => {
             openModal(type, id);
