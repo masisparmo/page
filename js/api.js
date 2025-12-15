@@ -1,8 +1,8 @@
 import { MOCK_DATA } from './mock-data.js';
 
 // --- CONFIGURATION ---
-const USE_MOCK = true; // Set FALSE jika sudah deploy GAS
-const GAS_URL = "https://script.google.com/macros/s/AKfycbx_PLACEHOLDER_URL/exec";
+const USE_MOCK = false; // Set FALSE jika sudah deploy GAS
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxw8FjvlkhbZG_t6XI0dC21BemY0nWJKUwmdujciALlmttwlkFDuQkTYPkE8rN1IGFu1Q/exec";
 
 // --- STATE MANAGEMENT ---
 let localData = null; // Menyimpan data yang di-fetch agar tidak request berulang kali jika tidak perlu
