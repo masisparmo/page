@@ -297,6 +297,15 @@
             currentData = await fetchData();
             if (!currentData) return;
 
+            // Check if we got Admin data (look for a known field like Password in apps if any exist)
+            // Or simpler: Check if any app has isLocked=true (which means it was sanitized)
+            const hasSanitizedApps = currentData.apps.some(app => app.isLocked === true);
+            if (hasSanitizedApps) {
+                alert("Sesi Admin Anda kedaluwarsa atau tidak valid. Data tidak dimuat sepenuhnya. Silakan Logout dan Login kembali.");
+                logout();
+                return;
+            }
+
             // Fill Profile Form
             const p = currentData.config;
             const form = document.getElementById('profile-form');
