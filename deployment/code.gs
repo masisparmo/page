@@ -278,16 +278,33 @@ function genericCRUD(sheetName, params) {
   // Ambil headers untuk mapping yang benar
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
 
+  // Normalize headers (trim whitespace) for safer matching
+  const cleanHeaders = headers.map(h => h.toString().trim());
+
+  // Function to find value in item ignoring case/whitespace of key
+  const getValue = (headerName) => {
+    // 1. Try exact match
+    if (item[headerName] !== undefined) return item[headerName];
+
+    // 2. Try trimmed match
+    const trimmed = headerName.trim();
+    if (item[trimmed] !== undefined) return item[trimmed];
+
+    // 3. Try case-insensitive match (slowest but safest)
+    const lowerKey = trimmed.toLowerCase();
+    const foundKey = Object.keys(item).find(k => k.toLowerCase() === lowerKey);
+    if (foundKey) return item[foundKey];
+
+    return "";
+  };
+
   if (operation === 'create') {
     // Generate ID Unik
     const newId = (sheetName === 'Socials' ? 'soc_' : 'app_') + new Date().getTime();
     item.ID = newId;
 
     // Map item values ke urutan header
-    const rowValues = headers.map(header => {
-      // Handle case mismatch or default empty
-      return item[header] !== undefined ? item[header] : "";
-    });
+    const rowValues = cleanHeaders.map(header => getValue(header));
 
     sheet.appendRow(rowValues);
     return { success: true, id: newId };
@@ -295,7 +312,10 @@ function genericCRUD(sheetName, params) {
 
   if (operation === 'update' || operation === 'delete') {
     const data = sheet.getDataRange().getValues();
-    const idIndex = headers.indexOf('ID');
+
+    // Find ID column index robustly
+    const idIndex = cleanHeaders.findIndex(h => h.toLowerCase() === 'id');
+
     if (idIndex === -1) return { success: false, message: "Column ID not found in sheet" };
 
     let rowIndex = -1;
@@ -313,9 +333,8 @@ function genericCRUD(sheetName, params) {
       sheet.deleteRow(rowIndex);
     } else {
       // Update: Map values to columns
-      const newRowValues = headers.map(header => {
-        return item[header] !== undefined ? item[header] : "";
-      });
+      const newRowValues = cleanHeaders.map(header => getValue(header));
+
       sheet.getRange(rowIndex, 1, 1, newRowValues.length).setValues([newRowValues]);
     }
     return { success: true };
