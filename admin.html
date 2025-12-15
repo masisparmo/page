@@ -285,6 +285,15 @@
                 cleanItem.Url = item.url;
                 cleanItem.IconClass = item.iconclass;
                 cleanItem.ColorTheme = item.colortheme;
+                cleanItem.Password = item.password; // Save password
+
+                // DEBUG: Alert payload to verify password is being sent
+                if (cleanItem.Password) {
+                    alert("DEBUG Client: Mengirim password: " + cleanItem.Password);
+                } else {
+                    alert("DEBUG Client: Password kosong/tidak dikirim.");
+                }
+
                 await crudApp(operation, cleanItem);
             }
 
