@@ -17,12 +17,12 @@ Isi awal (Contoh):
 
 ## 2. Sheet: `Users`
 Digunakan untuk login admin.
-**Kolom:** `Username` | `Password`
+**Kolom:** `Username` | `Password` | `Email`
 
 Isi awal:
-| Username | Password |
-| --- | --- |
-| admin | 123456 |
+| Username | Password | Email |
+| --- | --- | --- |
+| admin | 123456 | email_anda@gmail.com |
 
 *(Catatan: Password disimpan plain text untuk kesederhanaan sesuai request, bisa di-hash jika diinginkan nanti)*
 

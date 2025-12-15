@@ -34,7 +34,25 @@
                     <i class="fas fa-sign-in-alt mr-2"></i> Masuk
                 </button>
             </form>
+            <div class="mt-4 text-center">
+                <button onclick="openForgot()" class="text-sm text-blue-500 hover:underline">Lupa Password?</button>
+            </div>
             <p id="login-error" class="text-red-500 text-sm mt-4 text-center hidden"></p>
+        </div>
+    </div>
+
+    <!-- FORGOT PASSWORD MODAL -->
+    <div id="forgot-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-sm p-6">
+            <h3 class="text-xl font-bold mb-4">Reset Password</h3>
+            <p class="text-sm text-slate-500 mb-4">Masukkan username Anda. Password baru akan dikirim ke email yang terdaftar.</p>
+            <form id="forgot-form" class="space-y-3">
+                <input type="text" name="forgot_username" placeholder="Username" class="input-field" required>
+                <div class="flex justify-end gap-2 mt-4">
+                    <button type="button" onclick="closeForgot()" class="px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-100">Batal</button>
+                    <button type="submit" class="btn-primary">Kirim</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -154,7 +172,7 @@
     </style>
 
     <script type="module">
-        import { fetchData, login, updateProfile, crudSocial, crudApp } from './js/api.js';
+        import { fetchData, login, forgotPassword, updateProfile, crudSocial, crudApp } from './js/api.js';
 
         // --- GLOBAL STATE ---
         let currentData = null;
@@ -188,6 +206,35 @@
                 err.innerText = res.message;
                 err.classList.remove('hidden');
             }
+        };
+
+        document.getElementById('forgot-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const u = e.target.elements['forgot_username'].value;
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+
+            btn.innerText = "Mengirim...";
+            btn.disabled = true;
+
+            const res = await forgotPassword(u);
+            if (res.success) {
+                alert("Email reset password telah dikirim (jika username valid). Cek inbox/spam folder Anda.");
+                closeForgot();
+            } else {
+                alert("Gagal: " + res.message);
+            }
+
+            btn.innerText = originalText;
+            btn.disabled = false;
+        };
+
+        window.openForgot = () => {
+            document.getElementById('forgot-modal').classList.remove('hidden');
+        };
+
+        window.closeForgot = () => {
+            document.getElementById('forgot-modal').classList.add('hidden');
         };
 
         document.getElementById('profile-form').onsubmit = async (e) => {

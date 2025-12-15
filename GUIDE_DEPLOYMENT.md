@@ -7,7 +7,7 @@ Berikut adalah langkah-langkah untuk mengaktifkan Dashboard Admin dan menghubung
 2. Beri nama Sheet tersebut, misal "Database Website".
 3. Buat 4 Tab (Sheet) di dalamnya sesuai dengan struktur yang dijelaskan di file `deployment/database_schema.md`.
    - **Config**: Berisi data profil.
-   - **Users**: Berisi username dan password admin.
+    - **Users**: Berisi username, password, dan email admin.
    - **Socials**: Berisi daftar link sosial media.
    - **Apps**: Berisi daftar aplikasi.
 4. Isi data awal sesuai contoh di `deployment/database_schema.md`.

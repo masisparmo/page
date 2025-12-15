@@ -19,6 +19,6 @@ export const MOCK_DATA = {
         { ID: "app_3", Name: "Pro Studio Foto", Description: "Ubah Foto Produk Jadi Luar Biasa", Url: "https://gemini.google.com/share/b4ed682a130a", IconClass: "fas fa-camera-retro", ColorTheme: "pink", Visible: true }
     ],
     users: [
-        { Username: "admin", Password: "123" }
+        { Username: "admin", Password: "123", Email: "admin@example.com" }
     ]
 };

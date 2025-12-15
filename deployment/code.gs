@@ -23,6 +23,13 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // Forgot Password does not need token
+    if (action === 'forgotPassword') {
+      const result = handleForgotPassword(params);
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // AUTH CHECK FOR WRITE OPERATIONS
     if (!verifyToken(params.token)) {
       return ContentService.createTextOutput(JSON.stringify({ success: false, message: "Unauthorized. Invalid Token." }))
@@ -107,6 +114,53 @@ function handleLogin(params) {
     return { success: true, token: token };
   } else {
     return { success: false, message: "Username atau Password salah" };
+  }
+}
+
+function handleForgotPassword(params) {
+  const username = params.username;
+  const sheet = getSheet('Users');
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+
+  const userIdx = headers.indexOf('Username');
+  const passIdx = headers.indexOf('Password');
+  const emailIdx = headers.indexOf('Email');
+
+  if (userIdx === -1 || emailIdx === -1) {
+     return { success: false, message: "Konfigurasi Sheet User salah (Kolom Email tidak ditemukan)" };
+  }
+
+  let rowIndex = -1;
+  let userEmail = '';
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][userIdx] === username) {
+      rowIndex = i + 1;
+      userEmail = data[i][emailIdx];
+      break;
+    }
+  }
+
+  if (rowIndex === -1) return { success: false, message: "Username tidak ditemukan" };
+  if (!userEmail) return { success: false, message: "Email belum disetting untuk user ini" };
+
+  // Generate Password Baru
+  const newPass = Math.random().toString(36).slice(-8); // 8 character random string
+
+  // Update Password di Sheet
+  sheet.getRange(rowIndex, passIdx + 1).setValue(newPass);
+
+  // Kirim Email
+  try {
+    MailApp.sendEmail({
+      to: userEmail,
+      subject: "Reset Password Admin Website",
+      body: "Halo " + username + ",\n\nPassword admin website Anda telah direset.\n\nPassword Baru: " + newPass + "\n\nSilakan login dan ganti password ini jika perlu.\n\nSalam,\nAdmin System"
+    });
+    return { success: true };
+  } catch (e) {
+    return { success: false, message: "Gagal mengirim email: " + e.toString() };
   }
 }
 
