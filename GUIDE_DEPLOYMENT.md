@@ -12,6 +12,10 @@ Berikut adalah langkah-langkah untuk mengaktifkan Dashboard Admin dan menghubung
    - **Apps**: Berisi daftar aplikasi.
 4. Isi data awal sesuai contoh di `deployment/database_schema.md`.
 
+   **TIPS:** Anda juga bisa mendownload file Excel sampel yang sudah saya buatkan di `deployment/isparmo_database_sample.xlsx`.
+   - Buka file tersebut di Microsoft Excel / aplikasi spreadsheet lain.
+   - Atau langsung Import file tersebut ke Google Sheets (File > Import > Upload).
+
 ## 2. Pasang Google Apps Script (Backend)
 1. Di Google Sheet tersebut, klik menu **Extensions (Ekstensi)** > **Apps Script**.
 2. Hapus kode yang ada di `Code.gs`, lalu copy-paste seluruh kode dari file `deployment/code.gs` yang ada di folder proyek ini.
