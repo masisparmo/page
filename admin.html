@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Isparmo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: { colors: { brand: { dark: '#0f172a' } } }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-xl w-full max-w-sm border border-slate-200 dark:border-slate-700">
+            <h2 class="text-2xl font-bold mb-6 text-center">Admin Login</h2>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Username</label>
+                    <input type="text" id="username" class="w-full px-4 py-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Password</label>
+                    <input type="password" id="password" class="w-full px-4 py-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Masuk
+                </button>
+            </form>
+            <p id="login-error" class="text-red-500 text-sm mt-4 text-center hidden"></p>
+        </div>
+    </div>
+
+    <!-- DASHBOARD SCREEN -->
+    <div id="dashboard-screen" class="hidden">
+        <!-- Navbar -->
+        <nav class="bg-white dark:bg-slate-800 shadow-md p-4 sticky top-0 z-50">
+            <div class="max-w-4xl mx-auto flex justify-between items-center">
+                <h1 class="font-bold text-xl">Admin Dashboard</h1>
+                <button onclick="logout()" class="text-red-500 hover:text-red-600 font-medium text-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </nav>
+
+        <div class="max-w-4xl mx-auto p-4 mt-6">
+
+            <!-- TABS -->
+            <div class="flex gap-2 mb-6 border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
+                <button onclick="switchTab('profile')" id="tab-btn-profile" class="tab-btn px-4 py-2 border-b-2 border-blue-500 font-medium text-blue-600">Profile</button>
+                <button onclick="switchTab('socials')" id="tab-btn-socials" class="tab-btn px-4 py-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700">Socials</button>
+                <button onclick="switchTab('apps')" id="tab-btn-apps" class="tab-btn px-4 py-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700">Apps</button>
+            </div>
+
+            <!-- TAB CONTENT: PROFILE -->
+            <div id="tab-profile" class="tab-content">
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6">
+                    <h2 class="text-lg font-bold mb-4">Edit Profile</h2>
+                    <form id="profile-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Nama</label>
+                            <input type="text" name="profile_name" class="w-full input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Title / Bio Singkat</label>
+                            <input type="text" name="profile_title" class="w-full input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">URL Foto Profil</label>
+                            <input type="text" name="profile_image" class="w-full input-field">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" name="verified_badge" id="verified_badge" class="w-4 h-4">
+                            <label for="verified_badge" class="text-sm">Tampilkan Centang Biru</label>
+                        </div>
+                        <button type="submit" class="btn-primary">Simpan Perubahan</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT: SOCIALS -->
+            <div id="tab-socials" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold">Daftar Social Media</h2>
+                    <button onclick="openModal('social')" class="btn-primary text-sm"><i class="fas fa-plus mr-1"></i> Tambah</button>
+                </div>
+                <div id="socials-list" class="space-y-3">
+                    <!-- Items injected here -->
+                </div>
+            </div>
+
+            <!-- TAB CONTENT: APPS -->
+            <div id="tab-apps" class="tab-content hidden">
+                 <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold">Daftar Aplikasi / Link</h2>
+                    <button onclick="openModal('app')" class="btn-primary text-sm"><i class="fas fa-plus mr-1"></i> Tambah</button>
+                </div>
+                <div id="apps-list" class="space-y-3">
+                    <!-- Items injected here -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL FORM (Reusable) -->
+    <div id="modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md p-6">
+            <h3 id="modal-title" class="text-xl font-bold mb-4">Edit Item</h3>
+            <form id="modal-form" class="space-y-3">
+                <input type="hidden" name="id">
+                <input type="hidden" name="type"> <!-- 'social' or 'app' -->
+
+                <!-- Dynamic Fields -->
+                <div id="modal-fields"></div>
+
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700">Batal</button>
+                    <button type="submit" class="btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .input-field {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            background-color: #fff;
+            width: 100%;
+        }
+        .dark .input-field {
+            background-color: #334155;
+            border-color: #475569;
+            color: #fff;
+        }
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover { background-color: #1d4ed8; }
+    </style>
+
+    <script type="module">
+        import { fetchData, login, updateProfile, crudSocial, crudApp } from './js/api.js';
+
+        // --- GLOBAL STATE ---
+        let currentData = null;
+
+        // --- AUTH ---
+        window.logout = () => {
+            sessionStorage.removeItem('admin_token');
+            window.location.reload();
+        };
+
+        const checkAuth = () => {
+            if (sessionStorage.getItem('admin_token')) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('dashboard-screen').classList.remove('hidden');
+                loadDashboard();
+            }
+        };
+
+        // --- EVENT LISTENERS ---
+        document.getElementById('login-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+
+            const res = await login(u, p);
+            if (res.success) {
+                sessionStorage.setItem('admin_token', res.token);
+                checkAuth();
+            } else {
+                const err = document.getElementById('login-error');
+                err.innerText = res.message;
+                err.classList.remove('hidden');
+            }
+        };
+
+        document.getElementById('profile-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = {};
+            formData.forEach((value, key) => data[key] = value);
+            // Handle checkbox manually
+            data.verified_badge = document.getElementById('verified_badge').checked;
+
+            if(confirm("Simpan perubahan profil?")) {
+                await updateProfile(data);
+                alert("Profil diperbarui!");
+                loadDashboard(); // Refresh data
+            }
+        };
+
+        document.getElementById('modal-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const type = formData.get('type');
+            const id = formData.get('id');
+            const operation = id ? 'update' : 'create';
+
+            const item = {};
+            formData.forEach((value, key) => item[key] = value);
+
+            // Map keys back to match DB schema (Uppercase first letter typically in our mock/sheet)
+            // But let's check field names.
+            // In Modal generation we used lowercase names for input name attribute.
+            // We need to map them to Capitalized keys for the API/Sheet.
+
+            const cleanItem = {
+                ID: id || undefined,
+                Visible: item.visible === 'on' || item.visible === 'true' // Checkbox value
+            };
+
+            if (type === 'social') {
+                cleanItem.Platform = item.platform;
+                cleanItem.Url = item.url;
+                cleanItem.IconClass = item.iconclass;
+                await crudSocial(operation, cleanItem);
+            } else {
+                cleanItem.Name = item.name;
+                cleanItem.Description = item.description;
+                cleanItem.Url = item.url;
+                cleanItem.IconClass = item.iconclass;
+                cleanItem.ColorTheme = item.colortheme;
+                await crudApp(operation, cleanItem);
+            }
+
+            closeModal();
+            loadDashboard();
+        };
+
+        // --- DASHBOARD FUNCTIONS ---
+        async function loadDashboard() {
+            currentData = await fetchData();
+            if (!currentData) return;
+
+            // Fill Profile Form
+            const p = currentData.config;
+            const form = document.getElementById('profile-form');
+            form.elements['profile_name'].value = p.profile_name || '';
+            form.elements['profile_title'].value = p.profile_title || '';
+            form.elements['profile_image'].value = p.profile_image || '';
+            form.elements['verified_badge'].checked = String(p.verified_badge) === 'true';
+
+            // Fill Lists
+            renderList('socials-list', currentData.socials, 'social');
+            renderList('apps-list', currentData.apps, 'app');
+        }
+
+        function renderList(containerId, items, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            items.forEach(item => {
+                const el = document.createElement('div');
+                el.className = "flex items-center justify-between p-3 bg-white dark:bg-slate-700 rounded-lg shadow-sm border border-slate-100 dark:border-slate-600";
+
+                const title = type === 'social' ? item.Platform : item.Name;
+                const visible = String(item.Visible).toLowerCase() === 'true';
+
+                el.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded bg-slate-100 dark:bg-slate-600 flex items-center justify-center">
+                            <i class="${item.IconClass}"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium">${title}</p>
+                            <p class="text-xs text-slate-500 truncate max-w-[200px]">${item.Url}</p>
+                        </div>
+                        ${!visible ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">Hidden</span>' : ''}
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="window.editItem('${type}', '${item.ID}')" class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i class="fas fa-edit"></i></button>
+                        <button onclick="window.deleteItem('${type}', '${item.ID}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+        }
+
+        // --- EXPORTED TO WINDOW (For HTML onclick) ---
+        window.switchTab = (tab) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('border-blue-500', 'text-blue-600');
+                el.classList.add('border-transparent', 'text-slate-500');
+            });
+
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            const btn = document.getElementById(`tab-btn-${tab}`);
+            btn.classList.remove('border-transparent', 'text-slate-500');
+            btn.classList.add('border-blue-500', 'text-blue-600');
+        };
+
+        window.openModal = (type, id = null) => {
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modal-title');
+            const fields = document.getElementById('modal-fields');
+            const form = document.getElementById('modal-form');
+
+            form.reset();
+            form.elements['type'].value = type;
+            form.elements['id'].value = id || '';
+
+            title.innerText = id ? `Edit ${type}` : `Tambah ${type}`;
+
+            // Populate fields based on type
+            let html = '';
+            if (type === 'social') {
+                html += createInput('Platform', 'platform', 'text', 'e.g. Facebook');
+                html += createInput('URL', 'url', 'text', 'https://...');
+                html += createInput('FontAwesome Class', 'iconclass', 'text', 'fab fa-facebook');
+            } else {
+                html += createInput('Nama Aplikasi', 'name', 'text');
+                html += createInput('Deskripsi', 'description', 'text');
+                html += createInput('URL', 'url', 'text');
+                html += createInput('FontAwesome Class', 'iconclass', 'text', 'fas fa-link');
+                html += createInput('Warna Tema', 'colortheme', 'text', 'blue, purple, pink');
+            }
+
+            // Visible Checkbox
+            html += `
+                <div class="flex items-center gap-2 mt-4">
+                    <input type="checkbox" name="visible" id="visible-check" class="w-4 h-4" checked>
+                    <label for="visible-check" class="text-sm">Tampilkan</label>
+                </div>
+            `;
+
+            fields.innerHTML = html;
+
+            // Fill values if editing
+            if (id && currentData) {
+                const collection = type === 'social' ? currentData.socials : currentData.apps;
+                const item = collection.find(x => x.ID === id);
+                if (item) {
+                    if (type === 'social') {
+                        form.elements['platform'].value = item.Platform;
+                        form.elements['url'].value = item.Url;
+                        form.elements['iconclass'].value = item.IconClass;
+                    } else {
+                        form.elements['name'].value = item.Name;
+                        form.elements['description'].value = item.Description;
+                        form.elements['url'].value = item.Url;
+                        form.elements['iconclass'].value = item.IconClass;
+                        form.elements['colortheme'].value = item.ColorTheme;
+                    }
+                    if (document.getElementById('visible-check')) {
+                        document.getElementById('visible-check').checked = String(item.Visible).toLowerCase() === 'true';
+                    }
+                }
+            }
+
+            modal.classList.remove('hidden');
+        };
+
+        window.closeModal = () => {
+            document.getElementById('modal').classList.add('hidden');
+        };
+
+        window.editItem = (type, id) => {
+            openModal(type, id);
+        };
+
+        window.deleteItem = async (type, id) => {
+            if (confirm("Yakin ingin menghapus item ini?")) {
+                if (type === 'social') await crudSocial('delete', { ID: id });
+                else await crudApp('delete', { ID: id });
+                loadDashboard();
+            }
+        };
+
+        function createInput(label, name, type, placeholder = '') {
+            return `
+                <div class="mt-2">
+                    <label class="block text-sm font-medium mb-1 capitalize">${label}</label>
+                    <input type="${type}" name="${name}" placeholder="${placeholder}" class="input-field">
+                </div>
+            `;
+        }
+
+        // Init
+        checkAuth();
+
+    </script>
+</body>
+</html>
