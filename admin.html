@@ -6,6 +6,7 @@
     <title>Admin Dashboard - Isparmo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -172,7 +173,7 @@
     </style>
 
     <script type="module">
-        import { fetchData, login, forgotPassword, updateProfile, crudSocial, crudApp } from './js/api.js';
+        import { fetchData, login, forgotPassword, updateProfile, crudSocial, crudApp, reorderItems } from './js/api.js';
         import { ICONS } from './js/icons.js';
 
         // --- GLOBAL STATE ---
@@ -307,6 +308,9 @@
             // Fill Lists
             renderList('socials-list', currentData.socials, 'social');
             renderList('apps-list', currentData.apps, 'app');
+
+            // Initialize Sortable for Apps only (as requested)
+            initSortable('apps-list', 'app');
         }
 
         function renderList(containerId, items, type) {
@@ -315,21 +319,28 @@
 
             items.forEach(item => {
                 const el = document.createElement('div');
-                el.className = "flex items-center justify-between p-3 bg-white dark:bg-slate-700 rounded-lg shadow-sm border border-slate-100 dark:border-slate-600";
+                el.className = "flex items-center justify-between p-3 bg-white dark:bg-slate-700 rounded-lg shadow-sm border border-slate-100 dark:border-slate-600 group-item";
+                el.setAttribute('data-id', item.ID); // Crucial for sorting
 
                 const title = type === 'social' ? item.Platform : item.Name;
                 const visible = String(item.Visible).toLowerCase() === 'true';
 
+                // Add grip handle only for apps (since we enable sortable there)
+                const grip = type === 'app' ? '<i class="fas fa-grip-vertical text-slate-400 mr-3 cursor-move handle"></i>' : '';
+
                 el.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded bg-slate-100 dark:bg-slate-600 flex items-center justify-center">
-                            <i class="${item.IconClass}"></i>
+                    <div class="flex items-center">
+                        ${grip}
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded bg-slate-100 dark:bg-slate-600 flex items-center justify-center">
+                                <i class="${item.IconClass}"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">${title}</p>
+                                <p class="text-xs text-slate-500 truncate max-w-[200px]">${item.Url}</p>
+                            </div>
+                            ${!visible ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded ml-2">Hidden</span>' : ''}
                         </div>
-                        <div>
-                            <p class="font-medium">${title}</p>
-                            <p class="text-xs text-slate-500 truncate max-w-[200px]">${item.Url}</p>
-                        </div>
-                        ${!visible ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">Hidden</span>' : ''}
                     </div>
                     <div class="flex gap-2">
                         <button onclick="window.editItem('${type}', '${item.ID}')" class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i class="fas fa-edit"></i></button>
@@ -337,6 +348,31 @@
                     </div>
                 `;
                 container.appendChild(el);
+            });
+        }
+
+        function initSortable(containerId, type) {
+            const el = document.getElementById(containerId);
+            if (!el) return;
+
+            // Prevent duplicate initialization
+            if(el.sortable) el.sortable.destroy();
+
+            el.sortable = new Sortable(el, {
+                handle: '.handle', // Drag handle selector
+                animation: 150,
+                onEnd: async function (evt) {
+                    const ids = Array.from(el.children).map(child => child.getAttribute('data-id'));
+                    console.log("New Order:", ids);
+
+                    // Call API to save order
+                    const res = await reorderItems(type, ids);
+                    if (!res.success) {
+                        alert("Gagal menyimpan urutan: " + res.message);
+                        // Revert? For now, just reload dashboard to sync state
+                        loadDashboard();
+                    }
+                }
             });
         }
 

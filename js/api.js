@@ -1,8 +1,8 @@
 import { MOCK_DATA } from './mock-data.js';
 
 // --- CONFIGURATION ---
-const USE_MOCK = false; // Set FALSE jika sudah deploy GAS
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxA7gIwlp0jVx1s4DfFSfdUXSpUxilXkPuGsRdVGvtaGUjd93ACzsEVSD3cZjN0oz3PkQ/exec";
+const USE_MOCK = true; // Set FALSE jika sudah deploy GAS
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx_PLACEHOLDER_URL/exec";
 
 // --- STATE MANAGEMENT ---
 let localData = null; // Menyimpan data yang di-fetch agar tidak request berulang kali jika tidak perlu
@@ -86,6 +86,15 @@ export async function crudApp(operation, item) {
     return sendPostRequest('crudApp', { operation, item });
 }
 
+export async function reorderItems(type, orderedIds) {
+    if (USE_MOCK) {
+        console.log(`[API] Reorder ${type}:`, orderedIds);
+        handleMockReorder(type, orderedIds);
+        return { success: true };
+    }
+    return sendPostRequest('reorderItems', { type, orderedIds });
+}
+
 // --- HELPER PRIVATE FUNCTIONS ---
 
 async function sendPostRequest(action, payload) {
@@ -125,4 +134,14 @@ function handleMockCRUD(collectionKey, operation, item) {
         const index = list.findIndex(x => x.ID === item.ID);
         if (index !== -1) list.splice(index, 1);
     }
+}
+
+function handleMockReorder(type, orderedIds) {
+    const key = type === 'social' ? 'socials' : 'apps';
+    const list = MOCK_DATA[key];
+
+    // Sort array based on new order
+    list.sort((a, b) => {
+        return orderedIds.indexOf(a.ID) - orderedIds.indexOf(b.ID);
+    });
 }

@@ -43,6 +43,8 @@ function doPost(e) {
       result = handleCRUDSocial(params);
     } else if (action === 'crudApp') {
       result = handleCRUDApp(params);
+    } else if (action === 'reorderItems') {
+      result = handleReorderItems(params);
     }
 
     return ContentService.createTextOutput(JSON.stringify(result))
@@ -183,6 +185,52 @@ function handleCRUDSocial(params) {
 
 function handleCRUDApp(params) {
   return genericCRUD('Apps', params);
+}
+
+function handleReorderItems(params) {
+  const sheetName = params.type === 'social' ? 'Socials' : 'Apps';
+  const orderedIds = params.orderedIds;
+  const sheet = getSheet(sheetName);
+
+  if (!sheet) return { success: false, message: "Sheet not found" };
+
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift(); // Remove headers
+  const idIndex = headers.indexOf('ID');
+
+  if (idIndex === -1) return { success: false, message: "ID column not found" };
+
+  // Map existing rows by ID
+  const rowsMap = new Map();
+  data.forEach(row => {
+    rowsMap.set(row[idIndex], row);
+  });
+
+  // Reconstruct sorted rows
+  const newRows = [];
+
+  // 1. Add rows in the specific order requested
+  orderedIds.forEach(id => {
+    if (rowsMap.has(id)) {
+      newRows.push(rowsMap.get(id));
+      rowsMap.delete(id);
+    }
+  });
+
+  // 2. Append any remaining rows (safety fallback if some IDs were missing in the request)
+  for (const row of rowsMap.values()) {
+    newRows.push(row);
+  }
+
+  // Write back to sheet
+  if (newRows.length > 0) {
+    // Clear old content
+    sheet.getRange(2, 1, sheet.getLastRow(), sheet.getLastColumn()).clearContent();
+    // Write new sorted content
+    sheet.getRange(2, 1, newRows.length, newRows[0].length).setValues(newRows);
+  }
+
+  return { success: true };
 }
 
 function genericCRUD(sheetName, params) {
