@@ -6,7 +6,9 @@
 const SHEET_ID = ''; // OPTIONAL: Jika script menempel pada sheet, biarkan kosong.
 
 function doGet(e) {
-  const data = getAllData();
+  const token = e.parameter.token;
+  const isAdmin = verifyToken(token);
+  const data = getAllData(isAdmin);
   return ContentService.createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
 }
@@ -89,7 +91,7 @@ function getDataFromSheet(sheetName) {
   });
 }
 
-function getAllData() {
+function getAllData(isAdmin) {
   const configRaw = getDataFromSheet('Config');
   const socials = getDataFromSheet('Socials');
   let apps = getDataFromSheet('Apps');
@@ -99,16 +101,18 @@ function getAllData() {
     config[item.Key] = item.Value;
   });
 
-  // Security: Hide URL if app is password protected
-  apps = apps.map(app => {
-    if (app.Password && app.Password.toString().trim() !== "") {
-      // Return a modified object without the URL and Password
-      const { Url, Password, ...safeApp } = app;
-      safeApp.isLocked = true;
-      return safeApp;
-    }
-    return app;
-  });
+  // Security: Hide URL if app is password protected AND user is NOT admin
+  if (!isAdmin) {
+    apps = apps.map(app => {
+      if (app.Password && app.Password.toString().trim() !== "") {
+        // Return a modified object without the URL and Password
+        const { Url, Password, ...safeApp } = app;
+        safeApp.isLocked = true;
+        return safeApp;
+      }
+      return app;
+    });
+  }
 
   return {
     config: config,

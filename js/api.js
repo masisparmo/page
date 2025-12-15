@@ -2,7 +2,7 @@ import { MOCK_DATA } from './mock-data.js';
 
 // --- CONFIGURATION ---
 const USE_MOCK = false; // Set FALSE jika sudah deploy GAS
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzpe_yjYZCQg7euREIX3PQYRsdcE0mgVlOGPo4aRDDkCatR3zufId5toBUuRCbEO_z_VQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbydn7E1gtSdi_3AhuSOMLTsUIOW-jk4_zYlWCZ5g6ETmh2V4FE-wk2TWUBgrLX1pvD8CA/exec";
 
 // --- STATE MANAGEMENT ---
 let localData = null; // Menyimpan data yang di-fetch agar tidak request berulang kali jika tidak perlu
@@ -19,7 +19,15 @@ export async function fetchData() {
     }
 
     try {
-        const response = await fetch(GAS_URL);
+        // Append Token if available (for Admin Dashboard)
+        const token = sessionStorage.getItem('admin_token');
+        let url = GAS_URL;
+        if (token) {
+             const separator = url.includes('?') ? '&' : '?';
+             url += `${separator}token=${encodeURIComponent(token)}`;
+        }
+
+        const response = await fetch(url);
         const data = await response.json();
         localData = data;
         return data;
