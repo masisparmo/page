@@ -241,9 +241,12 @@
 
                 apps.forEach(app => {
                     const nameEl = app.querySelector('h3');
-                    const name = nameEl ? nameEl.innerText.toLowerCase() : '';
+                    const descEl = app.querySelector('p');
 
-                    if (name.includes(term)) {
+                    const name = nameEl ? nameEl.innerText.toLowerCase() : '';
+                    const desc = descEl ? descEl.innerText.toLowerCase() : '';
+
+                    if (name.includes(term) || desc.includes(term)) {
                         app.classList.remove('hidden');
                     } else {
                         app.classList.add('hidden');
