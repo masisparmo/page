@@ -3,14 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-FS0MVW69X5"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-FS0MVW69X5');
-</script>
     <title>Admin Dashboard - Isparmo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -313,7 +305,17 @@
                 cleanItem.Url = item.url;
                 cleanItem.IconClass = item.iconclass;
                 cleanItem.ColorTheme = item.colortheme;
-                cleanItem.Password = item.password; // Save password
+
+                // Handle Password Logic
+                const isLocked = document.getElementById('locked-check') && document.getElementById('locked-check').checked;
+                if (isLocked) {
+                    cleanItem.Password = item.password;
+                    cleanItem.PasswordSourceUrl = item.passwordsourceurl;
+                } else {
+                    cleanItem.Password = ""; // Clear password if unlocked
+                    cleanItem.PasswordSourceUrl = "";
+                }
+
                 await crudApp(operation, cleanItem);
             }
 
@@ -452,15 +454,29 @@
                 html += createInput('URL', 'url', 'text');
                 html += createIconPicker('FontAwesome Class', 'iconclass');
                 html += createInput('Warna Tema', 'colortheme', 'text', 'blue, purple, pink');
-                // Password with Toggle
+
+                // Password Protection Section
                 html += `
-                <div class="mt-2">
-                    <label class="block text-sm font-medium mb-1 capitalize">Password (Opsional)</label>
-                    <div class="relative">
-                        <input type="password" name="password" id="modal-password-input" placeholder="Kosongkan jika tidak dikunci" class="input-field !pr-10">
-                        <button type="button" onclick="togglePasswordVisibility('modal-password-input', this)" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none" title="Lihat Password">
-                            <i class="fas fa-eye"></i>
-                        </button>
+                <div class="mt-4 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
+                    <div class="flex items-center gap-2 mb-2">
+                        <input type="checkbox" id="locked-check" class="w-4 h-4" onclick="toggleLockFields()">
+                        <label for="locked-check" class="text-sm font-semibold">Kunci Aplikasi (Password)</label>
+                    </div>
+
+                    <div id="lock-fields" class="hidden space-y-3 pl-1 border-l-2 border-slate-200 dark:border-slate-600 ml-2">
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Password</label>
+                            <div class="relative">
+                                <input type="password" name="password" id="modal-password-input" placeholder="Masukkan password..." class="input-field !pr-10 text-sm">
+                                <button type="button" onclick="togglePasswordVisibility('modal-password-input', this)" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none" title="Lihat Password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Link Dapatkan Password (Opsional)</label>
+                            <input type="text" name="passwordsourceurl" id="password-source-url" placeholder="https://..." class="input-field text-sm">
+                        </div>
                     </div>
                 </div>
                 `;
@@ -586,6 +602,16 @@
                 }
             });
         }
+
+        window.toggleLockFields = () => {
+            const isChecked = document.getElementById('locked-check').checked;
+            const fields = document.getElementById('lock-fields');
+            if (isChecked) {
+                fields.classList.remove('hidden');
+            } else {
+                fields.classList.add('hidden');
+            }
+        };
 
         window.selectIcon = (iconClass) => {
             const input = document.getElementById('icon-input');
