@@ -365,12 +365,14 @@
 
             // Handle Password Source Button
             const getPassBtn = document.getElementById('get-password-btn');
+            getPassBtn.classList.remove('hidden'); // Always visible
+
             if (passwordSourceUrl) {
                 getPassBtn.href = passwordSourceUrl;
-                getPassBtn.classList.remove('hidden');
+                getPassBtn.classList.remove('opacity-50', 'pointer-events-none', 'cursor-not-allowed');
             } else {
-                getPassBtn.classList.add('hidden');
                 getPassBtn.href = '#';
+                getPassBtn.classList.add('opacity-50', 'pointer-events-none', 'cursor-not-allowed');
             }
 
             modal.classList.remove('hidden');

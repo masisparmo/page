@@ -310,7 +310,7 @@
                 const isLocked = document.getElementById('locked-check') && document.getElementById('locked-check').checked;
                 if (isLocked) {
                     cleanItem.Password = item.password;
-                    cleanItem.PasswordSourceUrl = item.passwordsourceurl;
+                    cleanItem.PasswordSourceUrl = item.PasswordSourceUrl;
                 } else {
                     cleanItem.Password = ""; // Clear password if unlocked
                     cleanItem.PasswordSourceUrl = "";
@@ -475,7 +475,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium mb-1">Link Dapatkan Password (Opsional)</label>
-                            <input type="text" name="passwordsourceurl" id="password-source-url" placeholder="https://..." class="input-field text-sm">
+                            <input type="text" name="PasswordSourceUrl" id="password-source-url" placeholder="https://..." class="input-field text-sm">
                         </div>
                     </div>
                 </div>
@@ -511,6 +511,18 @@
                         form.elements['iconclass'].value = item.IconClass;
                         form.elements['colortheme'].value = item.ColorTheme;
                         form.elements['password'].value = item.Password || '';
+
+                        // Handle Lock State
+                        const lockCheck = document.getElementById('locked-check');
+                        if (item.Password && lockCheck) {
+                            lockCheck.checked = true;
+                            toggleLockFields();
+                        }
+
+                        // Populate new field
+                        if (item.PasswordSourceUrl && form.elements['PasswordSourceUrl']) {
+                            form.elements['PasswordSourceUrl'].value = item.PasswordSourceUrl;
+                        }
                     }
                     // Update visual state of picker
                     updateIconPickerVisual(item.IconClass);
