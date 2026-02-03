@@ -29,7 +29,12 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Password</label>
-                    <input type="password" id="password" class="w-full px-4 py-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                    <div class="relative">
+                        <input type="password" id="password" class="w-full pl-4 pr-10 py-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                        <button type="button" onclick="togglePasswordVisibility('password', this)" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none" title="Lihat Password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
                     <i class="fas fa-sign-in-alt mr-2"></i> Masuk
@@ -178,6 +183,21 @@
 
         // --- GLOBAL STATE ---
         let currentData = null;
+
+        // --- UTILS ---
+        window.togglePasswordVisibility = (inputId, btn) => {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        };
 
         // --- AUTH ---
         window.logout = () => {
@@ -424,7 +444,18 @@
                 html += createInput('URL', 'url', 'text');
                 html += createIconPicker('FontAwesome Class', 'iconclass');
                 html += createInput('Warna Tema', 'colortheme', 'text', 'blue, purple, pink');
-                html += createInput('Password (Opsional)', 'password', 'text', 'Kosongkan jika tidak dikunci');
+                // Password with Toggle
+                html += `
+                <div class="mt-2">
+                    <label class="block text-sm font-medium mb-1 capitalize">Password (Opsional)</label>
+                    <div class="relative">
+                        <input type="password" name="password" id="modal-password-input" placeholder="Kosongkan jika tidak dikunci" class="input-field !pr-10">
+                        <button type="button" onclick="togglePasswordVisibility('modal-password-input', this)" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none" title="Lihat Password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                `;
             }
 
             // Visible Checkbox

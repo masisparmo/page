@@ -139,6 +139,16 @@
                 <div class="h-px bg-slate-400/30 dark:bg-slate-500/30 flex-1 transition-colors"></div>
             </div>
 
+            <!-- Search Box -->
+            <div class="relative mb-4 px-1">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-slate-400 text-sm"></i>
+                </div>
+                <input type="text" id="app-search"
+                    class="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/50 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 shadow-sm"
+                    placeholder="Cari aplikasi...">
+            </div>
+
             <div id="apps-container">
                 <!-- App links injected here -->
             </div>
@@ -179,7 +189,10 @@
                 <input type="hidden" id="locked-app-id">
                 <div class="relative">
                     <input type="password" id="app-password" placeholder="Masukkan password..."
-                           class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-center tracking-widest text-lg" required>
+                           class="w-full pl-4 pr-12 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-center tracking-widest text-lg" required>
+                    <button type="button" onclick="togglePasswordVisibility('app-password', this)" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors focus:outline-none p-1" title="Lihat Password">
+                        <i class="fas fa-eye"></i>
+                    </button>
                 </div>
                 <p id="password-error" class="text-red-500 text-xs text-center hidden font-medium bg-red-50 dark:bg-red-900/20 py-1 rounded"></p>
 
@@ -210,6 +223,28 @@
             document.getElementById('main-content').classList.remove('hidden');
             document.getElementById('year').innerText = new Date().getFullYear();
             document.getElementById('footer-name').innerText = data.config.profile_name || 'Isparmo';
+
+            // Setup Search Listener
+            setupSearch();
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('app-search');
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const apps = document.querySelectorAll('#apps-container .link-card');
+
+                apps.forEach(app => {
+                    const nameEl = app.querySelector('h3');
+                    const name = nameEl ? nameEl.innerText.toLowerCase() : '';
+
+                    if (name.includes(term)) {
+                        app.classList.remove('hidden');
+                    } else {
+                        app.classList.add('hidden');
+                    }
+                });
+            });
         }
 
         function renderProfile(config) {
@@ -299,6 +334,20 @@
         }
 
         // --- Password Modal Functions ---
+
+        window.togglePasswordVisibility = (inputId, btn) => {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        };
 
         window.openPasswordModal = (appId, appName) => {
             const modal = document.getElementById('password-modal');
