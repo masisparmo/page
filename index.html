@@ -257,9 +257,12 @@
 
         function renderCategories(apps) {
             const container = document.getElementById('category-container');
-            const categories = ['Semua', ...new Set(apps.map(a => a.Category).filter(Boolean))];
 
-            container.innerHTML = categories.map(cat => `
+            // Extract unique categories (split by comma, trim, filter empty)
+            const allCats = apps.flatMap(a => (a.Category || '').split(',').map(c => c.trim()).filter(Boolean));
+            const uniqueCats = ['Semua', ...new Set(allCats)];
+
+            container.innerHTML = uniqueCats.map(cat => `
                 <button onclick="window.filterCategory('${cat}')"
                     id="btn-cat-${cat.replace(/\s+/g, '-')}"
                     class="px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${cat === 'Semua' ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/30' : 'bg-white/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700'}">
@@ -300,7 +303,9 @@
                 // Let's add data-category to DOM in renderApps.
 
                 appsCards.forEach(app => {
-                    const category = app.getAttribute('data-category') || '';
+                    const categoryString = app.getAttribute('data-category') || '';
+                    const appCategories = categoryString.split(',').map(c => c.trim());
+
                     const nameEl = app.querySelector('h3');
                     const descEl = app.querySelector('p');
 
@@ -308,7 +313,9 @@
                     const desc = descEl ? descEl.innerText.toLowerCase() : '';
 
                     const matchesSearch = name.includes(term) || desc.includes(term);
-                    const matchesCategory = activeCategory === 'Semua' || category === activeCategory;
+
+                    // Check if activeCategory is in the app's category list
+                    const matchesCategory = activeCategory === 'Semua' || appCategories.includes(activeCategory);
 
                     if (matchesSearch && matchesCategory) {
                         app.classList.remove('hidden');

@@ -22,7 +22,7 @@ export const MOCK_DATA = {
             IconClass: "fas fa-chart-pie",
             ColorTheme: "blue",
             Visible: true,
-            Category: "Bisnis",
+            Category: "Bisnis, Produktivitas",
             ClickCount: 120
         },
         {
