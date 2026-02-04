@@ -86,6 +86,27 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        /* Thin Scrollbar for Categories */
+        .scrollbar-thin::-webkit-scrollbar {
+            height: 4px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1; /* slate-300 */
+            border-radius: 20px;
+        }
+        .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+            background-color: #475569; /* slate-600 */
+        }
+
+        /* Fade Mask Effect */
+        .fade-mask {
+            mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+        }
     </style>
 
     <script>
@@ -148,8 +169,8 @@
             </div>
 
             <!-- Category Tabs -->
-            <div class="w-full max-w-md mx-auto mb-4 overflow-hidden">
-                <div id="category-container" class="flex gap-2 px-4 w-full overflow-x-auto pb-2 scrollbar-hide -mx-4 md:mx-0 md:px-0">
+            <div class="w-full max-w-md mx-auto mb-4 overflow-hidden fade-mask">
+                <div id="category-container" class="flex gap-2 px-4 w-full overflow-x-auto pb-2 scrollbar-thin -mx-4 md:mx-0 md:px-0">
                     <!-- Tabs injected here -->
                 </div>
             </div>
