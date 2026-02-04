@@ -302,6 +302,7 @@
             } else {
                 cleanItem.Name = item.name;
                 cleanItem.Description = item.description;
+                cleanItem.Category = item.category;
                 cleanItem.Url = item.url;
                 cleanItem.IconClass = item.iconclass;
                 cleanItem.ColorTheme = item.colortheme;
@@ -451,6 +452,7 @@
             } else {
                 html += createInput('Nama Aplikasi', 'name', 'text');
                 html += createInput('Deskripsi', 'description', 'text');
+                html += createInput('Kategori', 'category', 'text', 'Misal: Video, Bisnis, Utilitas');
                 html += createInput('URL', 'url', 'text');
                 html += createIconPicker('FontAwesome Class', 'iconclass');
                 html += createInput('Warna Tema', 'colortheme', 'text', 'blue, purple, pink');
@@ -507,6 +509,7 @@
                     } else {
                         form.elements['name'].value = item.Name;
                         form.elements['description'].value = item.Description;
+                        form.elements['category'].value = item.Category || '';
                         form.elements['url'].value = item.Url;
                         form.elements['iconclass'].value = item.IconClass;
                         form.elements['colortheme'].value = item.ColorTheme;

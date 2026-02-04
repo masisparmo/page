@@ -103,6 +103,20 @@ export async function reorderItems(type, orderedIds) {
     return sendPostRequest('reorderItems', { type, orderedIds });
 }
 
+export async function incrementAppClick(appId) {
+    if (USE_MOCK) {
+        console.log(`[API] Increment Click for App: ${appId}`);
+        const app = MOCK_DATA.apps.find(a => a.ID === appId);
+        if (app) {
+            app.ClickCount = (app.ClickCount || 0) + 1;
+            console.log(`[API] New Count for ${app.Name}: ${app.ClickCount}`);
+        }
+        return { success: true };
+    }
+    // Fire and forget, don't await response strictly if speed matters
+    return sendPostRequest('incrementAppClick', { appId });
+}
+
 export async function verifyAppPassword(appId, password) {
     if (USE_MOCK) {
         console.log(`[API] Verify App Password: ${appId}`);
