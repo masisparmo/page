@@ -262,8 +262,14 @@ function handleIncrementAppClick(params) {
   for (let i = 1; i < data.length; i++) {
     if (data[i][idIdx] == appId) {
       const cell = sheet.getRange(i + 1, clickIdx + 1);
-      const currentVal = parseInt(cell.getValue()) || 0;
-      cell.setValue(currentVal + 1);
+      let val = cell.getValue();
+      // Handle empty string, null, or non-numeric values
+      if (val === "" || val === null || isNaN(parseInt(val))) {
+        val = 0;
+      } else {
+        val = parseInt(val);
+      }
+      cell.setValue(val + 1);
       return { success: true };
     }
   }
