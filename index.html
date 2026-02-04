@@ -281,9 +281,10 @@
 
             // Extract unique categories (split by comma, trim, filter empty)
             const allCats = apps.flatMap(a => (a.Category || '').split(',').map(c => c.trim()).filter(Boolean));
-            const uniqueCats = ['Semua', ...new Set(allCats)];
+            const uniqueCats = [...new Set(allCats)].sort((a, b) => a.localeCompare(b));
+            const finalCats = ['Semua', ...uniqueCats];
 
-            container.innerHTML = uniqueCats.map(cat => `
+            container.innerHTML = finalCats.map(cat => `
                 <button onclick="window.filterCategory('${cat}')"
                     id="btn-cat-${cat.replace(/\s+/g, '-')}"
                     class="px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${cat === 'Semua' ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/30' : 'bg-white/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700'}">
