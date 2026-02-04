@@ -436,7 +436,12 @@
                                     ${app.Name}
                                     ${lockIcon}
                                 </h3>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">${app.Description || ''}</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">${app.Description || ''}</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded-full">
+                                        <i class="fas fa-eye mr-1"></i>${app.ClickCount || 0}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <div class="text-slate-300 dark:text-slate-600 group-hover:text-${theme}-500 dark:group-hover:text-${theme}-400 transition-colors">

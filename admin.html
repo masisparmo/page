@@ -379,6 +379,7 @@
                             <div>
                                 <p class="font-medium">${title}</p>
                                 <p class="text-xs text-slate-500 truncate max-w-[200px]">${item.Url}</p>
+                                ${type === 'app' ? `<p class="text-[10px] text-slate-400 mt-0.5"><i class="fas fa-eye mr-1"></i>${item.ClickCount || 0}</p>` : ''}
                             </div>
                             ${!visible ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded ml-2">Hidden</span>' : ''}
                         </div>
