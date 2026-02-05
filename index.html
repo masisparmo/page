@@ -529,7 +529,8 @@
                 const res = await verifyAppPassword(appId, password);
 
                 if (res.success) {
-                    // Success! Redirect to URL
+                    // Success! Increment Click & Redirect to URL
+                    incrementAppClick(appId); // Call in background
                     window.open(res.url, '_blank');
                     closePasswordModal();
                 } else {
