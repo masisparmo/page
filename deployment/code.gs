@@ -231,21 +231,35 @@ function handleCRUDApp(params) {
 }
 
 function handleVerifyAppPassword(params) {
-  const appId = params.appId;
-  const password = params.password;
+  try {
+    const appId = params.appId;
+    const password = params.password;
 
-  const apps = getDataFromSheet('Apps');
-  const app = apps.find(a => a.ID === appId);
+    logToSheet("Verify Password Request", { appId: appId }); // Log request
 
-  if (!app) {
-    return { success: false, message: "Aplikasi tidak ditemukan" };
-  }
+    const apps = getDataFromSheet('Apps');
+    // Gunakan konversi string yang aman
+    const app = apps.find(a => String(a.ID) === String(appId));
 
-  // Check password (case-sensitive)
-  if (app.Password && app.Password.toString() === password) {
-    return { success: true, url: app.Url };
-  } else {
-    return { success: false, message: "Password salah" };
+    if (!app) {
+      logToSheet("Verify Password Error", "App Not Found");
+      return { success: false, message: "Aplikasi tidak ditemukan" };
+    }
+
+    // Check password (case-sensitive, tapi pastikan string comparison aman)
+    const storedPass = app.Password ? String(app.Password) : "";
+    const inputPass = password ? String(password) : "";
+
+    if (storedPass === inputPass) {
+      logToSheet("Verify Password Success", { appId: appId });
+      return { success: true, url: app.Url };
+    } else {
+      logToSheet("Verify Password Failed", { appId: appId, input: inputPass });
+      return { success: false, message: "Password salah" };
+    }
+  } catch (e) {
+    logToSheet("Verify Password Exception", e.toString());
+    return { success: false, message: "Server Error: " + e.toString() };
   }
 }
 
