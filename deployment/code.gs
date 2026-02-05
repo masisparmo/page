@@ -39,6 +39,13 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // Increment App Click does not need token (Public)
+    if (action === 'incrementAppClick') {
+      const result = handleIncrementAppClick(params);
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // AUTH CHECK FOR WRITE OPERATIONS
     if (!verifyToken(params.token)) {
       return ContentService.createTextOutput(JSON.stringify({ success: false, message: "Unauthorized. Invalid Token." }))
@@ -54,8 +61,6 @@ function doPost(e) {
       result = handleCRUDApp(params);
     } else if (action === 'reorderItems') {
       result = handleReorderItems(params);
-    } else if (action === 'incrementAppClick') {
-      result = handleIncrementAppClick(params);
     }
 
     return ContentService.createTextOutput(JSON.stringify(result))
