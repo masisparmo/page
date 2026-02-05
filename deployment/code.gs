@@ -251,6 +251,10 @@ function handleVerifyAppPassword(params) {
 
 function handleIncrementAppClick(params) {
   const appId = params.appId;
+
+  // Debug Logging
+  logToSheet("Increment Click Request", { appId: appId });
+
   const sheet = getSheet('Apps');
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
@@ -258,27 +262,42 @@ function handleIncrementAppClick(params) {
   const idIdx = headers.indexOf('ID');
   const clickIdx = headers.indexOf('ClickCount');
 
-  if (idIdx === -1) return { success: false, message: "ID column not found" };
+  if (idIdx === -1) {
+    logToSheet("Error Increment Click", "ID column not found");
+    return { success: false, message: "ID column not found" };
+  }
 
-  // If ClickCount column doesn't exist, we can't increment.
-  // Optionally we could create it, but safer to return error or ignore.
-  if (clickIdx === -1) return { success: false, message: "ClickCount column not found" };
+  if (clickIdx === -1) {
+    logToSheet("Error Increment Click", "ClickCount column not found");
+    return { success: false, message: "ClickCount column not found" };
+  }
 
   for (let i = 1; i < data.length; i++) {
-    if (data[i][idIdx] == appId) {
+    // Gunakan pembanding longgar (==) untuk menangani perbedaan tipe string/number
+    // atau konversi keduanya ke string agar aman.
+    if (String(data[i][idIdx]) === String(appId)) {
       const cell = sheet.getRange(i + 1, clickIdx + 1);
       let val = cell.getValue();
+
+      logToSheet(`Found App ${appId} at Row ${i+1}. Current Value: ${val}`, null);
+
       // Handle empty string, null, or non-numeric values
       if (val === "" || val === null || isNaN(parseInt(val))) {
         val = 0;
       } else {
         val = parseInt(val);
       }
-      cell.setValue(val + 1);
-      return { success: true };
+
+      const newVal = val + 1;
+      cell.setValue(newVal);
+
+      logToSheet(`Updated Value to: ${newVal}`, null);
+
+      return { success: true, newVal: newVal };
     }
   }
 
+  logToSheet("Error Increment Click", `App ID ${appId} not found in sheet`);
   return { success: false, message: "App ID not found" };
 }
 
