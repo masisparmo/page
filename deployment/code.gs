@@ -54,6 +54,8 @@ function doPost(e) {
       result = handleCRUDApp(params);
     } else if (action === 'reorderItems') {
       result = handleReorderItems(params);
+    } else if (action === 'incrementAppClick') {
+      result = handleIncrementAppClick(params);
     }
 
     return ContentService.createTextOutput(JSON.stringify(result))
@@ -240,6 +242,39 @@ function handleVerifyAppPassword(params) {
   } else {
     return { success: false, message: "Password salah" };
   }
+}
+
+function handleIncrementAppClick(params) {
+  const appId = params.appId;
+  const sheet = getSheet('Apps');
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+
+  const idIdx = headers.indexOf('ID');
+  const clickIdx = headers.indexOf('ClickCount');
+
+  if (idIdx === -1) return { success: false, message: "ID column not found" };
+
+  // If ClickCount column doesn't exist, we can't increment.
+  // Optionally we could create it, but safer to return error or ignore.
+  if (clickIdx === -1) return { success: false, message: "ClickCount column not found" };
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][idIdx] == appId) {
+      const cell = sheet.getRange(i + 1, clickIdx + 1);
+      let val = cell.getValue();
+      // Handle empty string, null, or non-numeric values
+      if (val === "" || val === null || isNaN(parseInt(val))) {
+        val = 0;
+      } else {
+        val = parseInt(val);
+      }
+      cell.setValue(val + 1);
+      return { success: true };
+    }
+  }
+
+  return { success: false, message: "App ID not found" };
 }
 
 function handleReorderItems(params) {

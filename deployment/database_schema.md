@@ -41,11 +41,19 @@ Isi awal (Contoh):
 
 ## 4. Sheet: `Apps`
 Daftar aplikasi/link produktivitas (Kartu-kartu link).
-**Kolom:** `ID` | `Name` | `Description` | `Url` | `IconClass` | `ColorTheme` | `Visible`
+**Kolom:** `ID` | `Name` | `Description` | `Url` | `IconClass` | `ColorTheme` | `Visible` | `Category` | `ClickCount` | `Password` | `PasswordSourceUrl`
+
+**PENTING: Pastikan urutan dan nama kolom header di baris pertama sesuai dengan tabel di bawah ini.**
 
 Isi awal (Contoh):
-| ID | Name | Description | Url | IconClass | ColorTheme | Visible |
-| --- | --- | --- | --- | --- | --- | --- |
-| app_1 | Pintar BMC | Buat Business Model Canvas Instan | https://bmcpintar.isparmo.com | fas fa-chart-pie | blue | TRUE |
-| app_2 | Pintar Promosi | Generator Copywriting Otomatis | https://pintarpromosi.isparmo.com | fas fa-bullhorn | purple | TRUE |
-| app_3 | Pro Studio Foto | Ubah Foto Produk Jadi Luar Biasa | https://gemini.google.com/... | fas fa-camera-retro | pink | TRUE |
+| ID | Name | Description | Url | IconClass | ColorTheme | Visible | Category | ClickCount | Password | PasswordSourceUrl |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| app_1 | Pintar BMC | Buat Business Model Canvas Instan | https://bmcpintar.isparmo.com | fas fa-chart-pie | blue | TRUE | Bisnis | 0 | | |
+| app_2 | Pintar Promosi | Generator Copywriting Otomatis | https://pintarpromosi.isparmo.com | fas fa-bullhorn | purple | TRUE | Bisnis | 120 | | |
+| app_3 | Pro Studio Foto | Ubah Foto Produk Jadi Luar Biasa | https://gemini.google.com/... | fas fa-camera-retro | pink | TRUE | Foto | 0 | 123 | https://wa.me/... |
+
+**Keterangan Kolom Baru:**
+*   `Category`: (Optional) Kategori aplikasi, misal "Video", "Foto", "Bisnis". Digunakan untuk filter tab.
+*   `ClickCount`: (Otomatis) Diisi angka 0. Sistem akan otomatis menambah angka ini setiap kali aplikasi diklik.
+*   `Password`: (Optional) Jika diisi, aplikasi akan terkunci dan meminta password.
+*   `PasswordSourceUrl`: (Optional) Link yang dituju saat user klik "Dapatkan Password" pada modal terkunci.
