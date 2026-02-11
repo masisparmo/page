@@ -164,9 +164,36 @@
         <span class="text-sm font-medium">Link profil berhasil disalin!</span>
     </div>
 
+    <!-- Password Modal -->
+    <div id="password-modal" class="fixed inset-0 bg-black/60 hidden z-[60] flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm p-6 transform scale-95 opacity-0 transition-all duration-300" id="password-modal-content">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 dark:text-blue-400">
+                    <i class="fas fa-lock text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Aplikasi Terkunci</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Masukkan password untuk mengakses <span id="locked-app-name" class="font-semibold text-slate-700 dark:text-slate-300"></span></p>
+            </div>
+
+            <form id="password-form" class="space-y-4">
+                <input type="hidden" id="locked-app-id">
+                <div class="relative">
+                    <input type="password" id="app-password" placeholder="Masukkan password..."
+                           class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-center tracking-widest text-lg" required>
+                </div>
+                <p id="password-error" class="text-red-500 text-xs text-center hidden font-medium bg-red-50 dark:bg-red-900/20 py-1 rounded"></p>
+
+                <div class="flex gap-3">
+                    <button type="button" onclick="closePasswordModal()" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Batal</button>
+                    <button type="submit" id="unlock-btn" class="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition-all transform active:scale-95">Buka</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Main Logic -->
     <script type="module">
-        import { fetchData } from './js/api.js';
+        import { fetchData, verifyAppPassword } from './js/api.js';
 
         async function init() {
             const data = await fetchData();
@@ -223,13 +250,29 @@
             container.innerHTML = '';
 
             apps.filter(app => String(app.Visible).toLowerCase() === 'true').forEach(app => {
-                const link = document.createElement('a');
-                link.href = app.Url;
-                link.target = "_blank";
+                const isLocked = app.isLocked || false;
 
+                // If locked, we don't put the URL in href. We use a #.
+                const href = isLocked ? '#' : app.Url;
+                const target = isLocked ? '' : '_blank';
                 const theme = app.ColorTheme || 'blue';
 
+                const link = document.createElement('a');
+                link.href = href;
+                if(target) link.target = target;
+
+                // Handle click for locked apps
+                if (isLocked) {
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        openPasswordModal(app.ID, app.Name);
+                    };
+                }
+
                 link.className = `link-card block bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-white/50 dark:border-slate-700 shadow-lg dark:shadow-none hover:border-${theme}-500 dark:hover:border-${theme}-500 relative overflow-hidden group mb-4`;
+
+                // Add Lock Icon if locked
+                const lockIcon = isLocked ? `<i class="fas fa-lock text-xs ml-2 text-slate-400 group-hover:text-${theme}-500 transition-colors"></i>` : '';
 
                 link.innerHTML = `
                     <div class="absolute top-0 left-0 w-1 h-full bg-${theme}-500 group-hover:w-2 transition-all"></div>
@@ -239,7 +282,10 @@
                                 <i class="${app.IconClass} text-lg"></i>
                             </div>
                             <div class="text-left">
-                                <h3 class="font-bold text-slate-800 dark:text-slate-100">${app.Name}</h3>
+                                <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1">
+                                    ${app.Name}
+                                    ${lockIcon}
+                                </h3>
                                 <p class="text-xs text-slate-500 dark:text-slate-400">${app.Description || ''}</p>
                             </div>
                         </div>
@@ -251,6 +297,76 @@
                 container.appendChild(link);
             });
         }
+
+        // --- Password Modal Functions ---
+
+        window.openPasswordModal = (appId, appName) => {
+            const modal = document.getElementById('password-modal');
+            const content = document.getElementById('password-modal-content');
+
+            document.getElementById('locked-app-id').value = appId;
+            document.getElementById('locked-app-name').innerText = appName;
+            document.getElementById('app-password').value = '';
+            document.getElementById('password-error').classList.add('hidden');
+
+            modal.classList.remove('hidden');
+            // Animation trigger
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            document.getElementById('app-password').focus();
+        };
+
+        window.closePasswordModal = () => {
+            const modal = document.getElementById('password-modal');
+            const content = document.getElementById('password-modal-content');
+
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        };
+
+        document.getElementById('password-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const appId = document.getElementById('locked-app-id').value;
+            const password = document.getElementById('app-password').value;
+            const btn = document.getElementById('unlock-btn');
+            const errorMsg = document.getElementById('password-error');
+
+            // Loading state
+            const originalText = btn.innerText;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+            errorMsg.classList.add('hidden');
+
+            try {
+                const res = await verifyAppPassword(appId, password);
+
+                if (res.success) {
+                    // Success! Redirect to URL
+                    window.open(res.url, '_blank');
+                    closePasswordModal();
+                } else {
+                    errorMsg.innerText = res.message || "Password salah.";
+                    errorMsg.classList.remove('hidden');
+                    // Shake animation effect
+                    const content = document.getElementById('password-modal-content');
+                    content.classList.add('animate-pulse'); // simple feedback
+                    setTimeout(() => content.classList.remove('animate-pulse'), 500);
+                }
+            } catch (err) {
+                errorMsg.innerText = "Terjadi kesalahan koneksi.";
+                errorMsg.classList.remove('hidden');
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        };
 
         init();
     </script>

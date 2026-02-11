@@ -6,7 +6,9 @@
 const SHEET_ID = ''; // OPTIONAL: Jika script menempel pada sheet, biarkan kosong.
 
 function doGet(e) {
-  const data = getAllData();
+  const token = e.parameter.token;
+  const isAdmin = verifyToken(token);
+  const data = getAllData(isAdmin);
   return ContentService.createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
 }
@@ -26,6 +28,13 @@ function doPost(e) {
     // Forgot Password does not need token
     if (action === 'forgotPassword') {
       const result = handleForgotPassword(params);
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Verify App Password does not need token (Public)
+    if (action === 'verifyAppPassword') {
+      const result = handleVerifyAppPassword(params);
       return ContentService.createTextOutput(JSON.stringify(result))
         .setMimeType(ContentService.MimeType.JSON);
     }
@@ -74,6 +83,20 @@ function getSheet(name) {
   return ss.getSheetByName(name);
 }
 
+function logToSheet(message, data) {
+  try {
+    const ss = SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName("DebugLog");
+    if (!sheet) {
+      sheet = ss.insertSheet("DebugLog");
+      sheet.appendRow(["Timestamp", "Message", "Data"]);
+    }
+    sheet.appendRow([new Date(), message, JSON.stringify(data)]);
+  } catch (e) {
+    // Fail silently if logging fails
+  }
+}
+
 function getDataFromSheet(sheetName) {
   const sheet = getSheet(sheetName);
   if (!sheet) return [];
@@ -86,15 +109,28 @@ function getDataFromSheet(sheetName) {
   });
 }
 
-function getAllData() {
+function getAllData(isAdmin) {
   const configRaw = getDataFromSheet('Config');
   const socials = getDataFromSheet('Socials');
-  const apps = getDataFromSheet('Apps');
+  let apps = getDataFromSheet('Apps');
 
   let config = {};
   configRaw.forEach(item => {
     config[item.Key] = item.Value;
   });
+
+  // Security: Hide URL if app is password protected AND user is NOT admin
+  if (!isAdmin) {
+    apps = apps.map(app => {
+      if (app.Password && app.Password.toString().trim() !== "") {
+        // Return a modified object without the URL and Password
+        const { Url, Password, ...safeApp } = app;
+        safeApp.isLocked = true;
+        return safeApp;
+      }
+      return app;
+    });
+  }
 
   return {
     config: config,
@@ -187,6 +223,25 @@ function handleCRUDApp(params) {
   return genericCRUD('Apps', params);
 }
 
+function handleVerifyAppPassword(params) {
+  const appId = params.appId;
+  const password = params.password;
+
+  const apps = getDataFromSheet('Apps');
+  const app = apps.find(a => a.ID === appId);
+
+  if (!app) {
+    return { success: false, message: "Aplikasi tidak ditemukan" };
+  }
+
+  // Check password (case-sensitive)
+  if (app.Password && app.Password.toString() === password) {
+    return { success: true, url: app.Url };
+  } else {
+    return { success: false, message: "Password salah" };
+  }
+}
+
 function handleReorderItems(params) {
   const sheetName = params.type === 'social' ? 'Socials' : 'Apps';
   const orderedIds = params.orderedIds;
@@ -238,8 +293,31 @@ function genericCRUD(sheetName, params) {
   const operation = params.operation;
   const item = params.item;
 
+  logToSheet(`CRUD Request: ${sheetName} - ${operation}`, item);
+
   // Ambil headers untuk mapping yang benar
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+
+  // Normalize headers (trim whitespace) for safer matching
+  const cleanHeaders = headers.map(h => h.toString().trim());
+  logToSheet("Detected Headers", cleanHeaders);
+
+  // Function to find value in item ignoring case/whitespace of key
+  const getValue = (headerName) => {
+    // 1. Try exact match
+    if (item[headerName] !== undefined) return item[headerName];
+
+    // 2. Try trimmed match
+    const trimmed = headerName.trim();
+    if (item[trimmed] !== undefined) return item[trimmed];
+
+    // 3. Try case-insensitive match (slowest but safest)
+    const lowerKey = trimmed.toLowerCase();
+    const foundKey = Object.keys(item).find(k => k.toLowerCase() === lowerKey);
+    if (foundKey) return item[foundKey];
+
+    return "";
+  };
 
   if (operation === 'create') {
     // Generate ID Unik
@@ -247,10 +325,8 @@ function genericCRUD(sheetName, params) {
     item.ID = newId;
 
     // Map item values ke urutan header
-    const rowValues = headers.map(header => {
-      // Handle case mismatch or default empty
-      return item[header] !== undefined ? item[header] : "";
-    });
+    const rowValues = cleanHeaders.map(header => getValue(header));
+    logToSheet("Writing Row (Create)", rowValues);
 
     sheet.appendRow(rowValues);
     return { success: true, id: newId };
@@ -258,8 +334,14 @@ function genericCRUD(sheetName, params) {
 
   if (operation === 'update' || operation === 'delete') {
     const data = sheet.getDataRange().getValues();
-    const idIndex = headers.indexOf('ID');
-    if (idIndex === -1) return { success: false, message: "Column ID not found in sheet" };
+
+    // Find ID column index robustly
+    const idIndex = cleanHeaders.findIndex(h => h.toLowerCase() === 'id');
+
+    if (idIndex === -1) {
+        logToSheet("Error", "Column ID not found");
+        return { success: false, message: "Column ID not found in sheet" };
+    }
 
     let rowIndex = -1;
     // Cari baris berdasarkan ID
@@ -270,15 +352,18 @@ function genericCRUD(sheetName, params) {
       }
     }
 
-    if (rowIndex === -1) return { success: false, message: "ID not found" };
+    if (rowIndex === -1) {
+         logToSheet("Error", `ID not found: ${item.ID}`);
+         return { success: false, message: "ID not found" };
+    }
 
     if (operation === 'delete') {
       sheet.deleteRow(rowIndex);
     } else {
       // Update: Map values to columns
-      const newRowValues = headers.map(header => {
-        return item[header] !== undefined ? item[header] : "";
-      });
+      const newRowValues = cleanHeaders.map(header => getValue(header));
+      logToSheet("Writing Row (Update)", newRowValues);
+
       sheet.getRange(rowIndex, 1, 1, newRowValues.length).setValues([newRowValues]);
     }
     return { success: true };

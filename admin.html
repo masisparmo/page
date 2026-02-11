@@ -285,6 +285,7 @@
                 cleanItem.Url = item.url;
                 cleanItem.IconClass = item.iconclass;
                 cleanItem.ColorTheme = item.colortheme;
+                cleanItem.Password = item.password; // Save password
                 await crudApp(operation, cleanItem);
             }
 
@@ -296,6 +297,15 @@
         async function loadDashboard() {
             currentData = await fetchData();
             if (!currentData) return;
+
+            // Check if we got Admin data (look for a known field like Password in apps if any exist)
+            // Or simpler: Check if any app has isLocked=true (which means it was sanitized)
+            const hasSanitizedApps = currentData.apps.some(app => app.isLocked === true);
+            if (hasSanitizedApps) {
+                alert("Sesi Admin Anda kedaluwarsa atau tidak valid. Data tidak dimuat sepenuhnya. Silakan Logout dan Login kembali.");
+                logout();
+                return;
+            }
 
             // Fill Profile Form
             const p = currentData.config;
@@ -414,6 +424,7 @@
                 html += createInput('URL', 'url', 'text');
                 html += createIconPicker('FontAwesome Class', 'iconclass');
                 html += createInput('Warna Tema', 'colortheme', 'text', 'blue, purple, pink');
+                html += createInput('Password (Opsional)', 'password', 'text', 'Kosongkan jika tidak dikunci');
             }
 
             // Visible Checkbox
@@ -444,6 +455,7 @@
                         form.elements['url'].value = item.Url;
                         form.elements['iconclass'].value = item.IconClass;
                         form.elements['colortheme'].value = item.ColorTheme;
+                        form.elements['password'].value = item.Password || '';
                     }
                     // Update visual state of picker
                     updateIconPickerVisual(item.IconClass);
@@ -468,7 +480,7 @@
                 <div class="mt-2 relative">
                     <label class="block text-sm font-medium mb-1 capitalize">${label}</label>
                     <div class="relative">
-                        <input type="text" name="${name}" id="icon-input" class="input-field pl-10" placeholder="Pilih atau ketik icon..." autocomplete="off">
+                        <input type="text" name="${name}" id="icon-input" class="input-field !pl-12" placeholder="Pilih atau ketik icon..." autocomplete="off">
                         <div id="icon-preview" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-lg">
                             <i class="fas fa-search"></i>
                         </div>
