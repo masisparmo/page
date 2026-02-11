@@ -122,9 +122,22 @@
 
             <!-- TAB CONTENT: APPS -->
             <div id="tab-apps" class="tab-content hidden">
-                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold">Daftar Aplikasi / Link</h2>
-                    <button onclick="openModal('app')" class="btn-primary text-sm"><i class="fas fa-plus mr-1"></i> Tambah</button>
+                 <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                    <h2 class="text-lg font-bold whitespace-nowrap">Daftar Aplikasi / Link</h2>
+
+                    <div class="flex w-full md:w-auto gap-2">
+                        <!-- Search Box -->
+                        <div class="relative w-full md:w-64">
+                            <input type="text" id="admin-app-search"
+                                class="w-full pl-9 pr-3 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                placeholder="Cari aplikasi...">
+                            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
+                                <i class="fas fa-search text-xs"></i>
+                            </div>
+                        </div>
+
+                        <button onclick="openModal('app')" class="btn-primary text-sm whitespace-nowrap"><i class="fas fa-plus mr-1"></i> Tambah</button>
+                    </div>
                 </div>
                 <div id="apps-list" class="space-y-3">
                     <!-- Items injected here -->
@@ -214,6 +227,34 @@
         };
 
         // --- EVENT LISTENERS ---
+        // Search Functionality
+        document.getElementById('admin-app-search').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const container = document.getElementById('apps-list');
+            const items = container.querySelectorAll('.group-item');
+
+            items.forEach(item => {
+                const titleEl = item.querySelector('p.font-medium');
+                // The description/url is in the second p tag, but we iterate over p inside div
+                // Structure: div > p.font-medium (title) | p.text-xs (desc/url)
+                const textContainer = item.querySelector('div > div:nth-child(2)');
+
+                let textContent = "";
+                if(textContainer) {
+                    textContent = textContainer.innerText.toLowerCase();
+                }
+
+                // Check also data-id if needed, but text content covers Title and URL/Desc
+                if (textContent.includes(term)) {
+                    item.classList.remove('hidden');
+                    item.classList.add('flex'); // Restore flex display
+                } else {
+                    item.classList.add('hidden');
+                    item.classList.remove('flex');
+                }
+            });
+        });
+
         document.getElementById('login-form').onsubmit = async (e) => {
             e.preventDefault();
             const u = document.getElementById('username').value;
