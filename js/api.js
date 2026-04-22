@@ -54,6 +54,12 @@ async function fetchDataFromNetwork(token, cacheKey) {
 
         const response = await fetch(url);
         const data = await response.json();
+
+        // Rewrite .png to .webp for profile image
+        if (data && data.config && data.config.profile_image) {
+             data.config.profile_image = data.config.profile_image.replace(/\.png$/i, '.webp');
+        }
+
         localData = data;
 
         // Simpan ke IndexedDB hanya untuk data public
