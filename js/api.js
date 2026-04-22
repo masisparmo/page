@@ -1,4 +1,5 @@
 import { MOCK_DATA } from './mock-data.js';
+import { getCachedData, setCachedData } from './idb-helper.js';
 
 // --- CONFIGURATION ---
 const USE_MOCK = false; // Set FALSE jika sudah deploy GAS
@@ -9,7 +10,7 @@ let localData = null; // Menyimpan data yang di-fetch agar tidak request berulan
 
 // --- API FUNCTIONS ---
 
-export async function fetchData() {
+export async function fetchData(forceRefresh = false) {
     if (USE_MOCK) {
         console.log("[API] Fetching data (MOCK MODE)...");
         // Simulasi network delay
@@ -18,9 +19,33 @@ export async function fetchData() {
         return localData;
     }
 
+    const token = sessionStorage.getItem('admin_token');
+
+    // Jika ada token admin (berarti ini Dashboard Admin), jangan gunakan caching.
+    // Data admin berisi password yang tidak boleh tersimpan di IndexedDB.
+    // Selalu fetch dari network secara real-time.
+    if (token) {
+        return await fetchDataFromNetwork(token, null);
+    }
+
+    const cacheKey = 'data_public';
+
+    // Jika tidak di-force refresh dan ini publik, coba ambil dari IndexedDB
+    if (!forceRefresh) {
+        const cached = await getCachedData(cacheKey);
+        if (cached) {
+            localData = cached;
+            // Secara asynchronous ambil data terbaru di background dan update cache
+            fetchDataFromNetwork(token, cacheKey).catch(console.error);
+            return cached;
+        }
+    }
+
+    return await fetchDataFromNetwork(token, cacheKey);
+}
+
+async function fetchDataFromNetwork(token, cacheKey) {
     try {
-        // Append Token if available (for Admin Dashboard)
-        const token = sessionStorage.getItem('admin_token');
         let url = GAS_URL;
         if (token) {
              const separator = url.includes('?') ? '&' : '?';
@@ -30,10 +55,16 @@ export async function fetchData() {
         const response = await fetch(url);
         const data = await response.json();
         localData = data;
+
+        // Simpan ke IndexedDB hanya untuk data public
+        if (cacheKey) {
+            await setCachedData(cacheKey, data);
+        }
+
         return data;
     } catch (error) {
         console.error("Error fetching data:", error);
-        return null;
+        return localData; // Return old data if available on error
     }
 }
 
