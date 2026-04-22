@@ -86,7 +86,7 @@
         }
     </script>
 </head>
-<body class="modern-bg text-slate-800 dark:text-slate-100 min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-500">
+<body class="modern-bg text-slate-800 dark:text-slate-100 min-h-screen flex flex-col items-center p-4 transition-colors duration-500 pt-16">
 
     <!-- Theme Toggle -->
     <div class="fixed top-4 right-4 z-[60]">
@@ -106,11 +106,12 @@
         
         <!-- Profile Section -->
         <div class="flex flex-col items-center mb-8 text-center max-w-md mx-auto w-full">
-            <div class="relative group">
+            <div class="relative group inline-block">
                 <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full opacity-75 group-hover:opacity-100 transition duration-300 blur"></div>
                 <!-- Profile Image -->
                 <img id="profile-image" src="" alt="Profile"
-                     class="relative w-32 h-32 rounded-full object-cover object-top border-4 border-white dark:border-slate-800 shadow-xl"
+                     class="relative w-32 h-32 aspect-square rounded-full object-cover object-center border-4 border-white dark:border-slate-800 shadow-xl"
+                     style="min-width: 128px; min-height: 128px;"
                      onerror="this.src='https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff&size=128'">
                 
                 <!-- Verification Badge -->
